@@ -162,53 +162,45 @@ export class MemoryManager {
     let results;
     
     try {
-      // Build the query using the SQL tagged template literal
-      let whereConditions = [];
-      let sqlParams = [];
-      
-      // Base query
+      // Build the query using direct string interpolation with proper escaping
       let sqlQuery = `
         SELECT id, timestamp, content, context, source, metadata
         FROM episodic_memories
+        WHERE 1=1
       `;
-      
+
       // Add WHERE conditions if needed
       if (startTime !== undefined) {
-        whereConditions.push("timestamp >= ?");
-        sqlParams.push(startTime);
+        sqlQuery += ` AND timestamp >= ${startTime}`;
       }
-      
+
       if (endTime !== undefined) {
-        whereConditions.push("timestamp <= ?");
-        sqlParams.push(endTime);
+        sqlQuery += ` AND timestamp <= ${endTime}`;
       }
-      
+
       if (source !== undefined) {
-        whereConditions.push("source = ?");
-        sqlParams.push(source);
+        // Escape single quotes in the source string
+        const escapedSource = source.replace(/'/g, "''");
+        sqlQuery += ` AND source = '${escapedSource}'`;
       }
-      
+
       if (context !== undefined) {
-        whereConditions.push("context = ?");
-        sqlParams.push(context);
+        // Escape single quotes in the context string
+        const escapedContext = context.replace(/'/g, "''");
+        sqlQuery += ` AND context = '${escapedContext}'`;
       }
-      
+
       if (query && query.trim() !== '') {
-        const searchPattern = `%${query}%`;
-        whereConditions.push("content LIKE ?");
-        sqlParams.push(searchPattern);
+        // Escape special characters for LIKE query
+        const escapedQuery = query.replace(/'/g, "''").replace(/%/g, "\\%");
+        sqlQuery += ` AND content LIKE '%${escapedQuery}%'`;
       }
-      
-      // Add WHERE clause if we have conditions
-      if (whereConditions.length > 0) {
-        sqlQuery += " WHERE " + whereConditions.join(" AND ");
-      }
-      
+
       // Add ORDER BY and LIMIT
       sqlQuery += ` ORDER BY timestamp DESC LIMIT ${limit}`;
-      
-      // Execute the query using the tagged template literal
-      results = await this.agent.sql(sqlQuery, ...sqlParams);
+
+      // Execute the query using template literals
+      results = await this.agent.sql`${sqlQuery}`;
     } catch (error) {
       console.error("Error retrieving memories:", error);
       // Return empty array on error
