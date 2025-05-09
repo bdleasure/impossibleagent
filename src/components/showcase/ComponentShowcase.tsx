@@ -87,6 +87,17 @@ export function ComponentShowcase() {
             <Button>View Demo</Button>
           </Link>
         </Card>
+
+        <Card className="showcase-card">
+          <h2>Proactive Check-In</h2>
+          <p>
+            A system for AI-initiated emotional engagement with configurable frequency
+            and triggers for different types of check-ins.
+          </p>
+          <Link to="/proactive-check-in">
+            <Button>View Demo</Button>
+          </Link>
+        </Card>
       </div>
     </div>
   );

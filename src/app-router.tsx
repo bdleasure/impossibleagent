@@ -6,7 +6,8 @@ import {
   VoiceInteractionRoute,
   ShowcaseRoute,
   LifelineRoute,
-  CompanionAvatarRoute
+  CompanionAvatarRoute,
+  ProactiveCheckInRoute
 } from "@/routes";
 import Chat from "./app";
 
@@ -31,6 +32,7 @@ export function AppRouter() {
         <Route path="/voice-interaction" element={<VoiceInteractionRoute />} />
         <Route path="/lifeline" element={<LifelineRoute />} />
         <Route path="/companion-avatar" element={<CompanionAvatarRoute />} />
+        <Route path="/proactive-check-in" element={<ProactiveCheckInRoute />} />
         
         {/* Chat application */}
         <Route path="/chat" element={<Chat />} />

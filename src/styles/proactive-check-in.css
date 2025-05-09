@@ -1,0 +1,122 @@
+/* Proactive Check-In System Styles */
+
+.proactive-check-in {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proactive-check-in-indicator {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proactive-check-in-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--primary-color, #007bff);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  z-index: 2;
+}
+
+.proactive-check-in-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Different colors for different check-in reasons */
+.proactive-check-in-icon[data-reason="inactivity"] {
+  background-color: var(--warning-color, #ffc107);
+}
+
+.proactive-check-in-icon[data-reason="sentiment"] {
+  background-color: var(--info-color, #17a2b8);
+}
+
+.proactive-check-in-icon[data-reason="deadline"] {
+  background-color: var(--danger-color, #dc3545);
+}
+
+/* Pulse animation */
+.proactive-check-in-pulse {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--primary-color, #007bff);
+  opacity: 0.6;
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+/* Match pulse color to icon reason */
+.proactive-check-in-icon[data-reason="inactivity"] + .proactive-check-in-pulse {
+  background-color: var(--warning-color, #ffc107);
+}
+
+.proactive-check-in-icon[data-reason="sentiment"] + .proactive-check-in-pulse {
+  background-color: var(--info-color, #17a2b8);
+}
+
+.proactive-check-in-icon[data-reason="deadline"] + .proactive-check-in-pulse {
+  background-color: var(--danger-color, #dc3545);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* Dark mode adjustments */
+html.dark .proactive-check-in-icon {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .proactive-check-in {
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .proactive-check-in-indicator {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .proactive-check-in-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .proactive-check-in-pulse {
+    width: 50px;
+    height: 50px;
+  }
+}

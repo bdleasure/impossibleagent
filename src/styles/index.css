@@ -12,6 +12,8 @@
 @import "./ritual-moments.css";
 @import "./component-showcase.css";
 @import "./companion-avatar-demo.css";
+@import "./proactive-check-in.css";
+@import "./proactive-check-in-demo.css";
 
 /* CSS Variables for components */
 :root {
@@ -71,6 +73,16 @@
   --ritual-daily-end: #10b981;
   --ritual-daily-inner: #a7f3d0;
   --ritual-daily-outer: #059669;
+  
+  /* Proactive Check-In Variables */
+  --check-in-primary: #3b82f6;
+  --check-in-warning: #f59e0b;
+  --check-in-info: #06b6d4;
+  --check-in-danger: #ef4444;
+  --check-in-pulse-opacity: 0.6;
+  --check-in-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --check-in-icon-bg: #ffffff;
+  --check-in-icon-color: #333333;
   
   --ritual-weekly-start: #60a5fa;
   --ritual-weekly-end: #3b82f6;
@@ -161,6 +173,16 @@
   --ritual-daily-end: #047857;
   --ritual-daily-inner: #065f46;
   --ritual-daily-outer: #022c22;
+  
+  /* Proactive Check-In Variables - Dark Mode */
+  --check-in-primary: #60a5fa;
+  --check-in-warning: #fbbf24;
+  --check-in-info: #22d3ee;
+  --check-in-danger: #f87171;
+  --check-in-pulse-opacity: 0.5;
+  --check-in-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --check-in-icon-bg: #1f2937;
+  --check-in-icon-color: #f3f4f6;
   
   --ritual-weekly-start: #1d4ed8;
   --ritual-weekly-end: #1e40af;

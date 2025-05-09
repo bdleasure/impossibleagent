@@ -1,0 +1,260 @@
+/* Proactive Check-In Demo Styles */
+
+.proactive-check-in-demo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+}
+
+.proactive-check-in-demo h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--heading-color, #333);
+  border-bottom: 2px solid var(--border-color, #eee);
+  padding-bottom: 0.5rem;
+}
+
+.proactive-check-in-demo h2 {
+  font-size: 1.8rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--heading-color, #333);
+}
+
+.demo-section {
+  background-color: var(--card-bg, #fff);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Controls Styling */
+.settings-controls,
+.trigger-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.control-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.control-group input[type="number"] {
+  width: 80px;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 4px;
+}
+
+.control-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 4px;
+  background-color: var(--input-bg, #fff);
+  color: var(--text-color, #333);
+}
+
+.control-group span {
+  margin-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Button Styling */
+.trigger-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.trigger-buttons button {
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--primary-color, #007bff);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.trigger-buttons button:hover {
+  background-color: var(--primary-hover, #0069d9);
+}
+
+.trigger-buttons button:active {
+  transform: translateY(1px);
+}
+
+/* Different colors for different trigger buttons */
+.trigger-buttons button:nth-child(1) {
+  background-color: var(--warning-color, #ffc107);
+  color: var(--dark-text, #212529);
+}
+
+.trigger-buttons button:nth-child(1):hover {
+  background-color: var(--warning-hover, #e0a800);
+}
+
+.trigger-buttons button:nth-child(2) {
+  background-color: var(--info-color, #17a2b8);
+}
+
+.trigger-buttons button:nth-child(2):hover {
+  background-color: var(--info-hover, #138496);
+}
+
+.trigger-buttons button:nth-child(3) {
+  background-color: var(--danger-color, #dc3545);
+}
+
+.trigger-buttons button:nth-child(3):hover {
+  background-color: var(--danger-hover, #c82333);
+}
+
+.trigger-buttons button:nth-child(4) {
+  background-color: var(--secondary-color, #6c757d);
+}
+
+.trigger-buttons button:nth-child(4):hover {
+  background-color: var(--secondary-hover, #5a6268);
+}
+
+/* Status Display Styling */
+.status-display {
+  background-color: var(--code-bg, #f8f9fa);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: monospace;
+}
+
+.status-item {
+  margin-bottom: 0.75rem;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-item strong {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.status-item pre {
+  background-color: var(--pre-bg, #f1f1f1);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+/* Component Preview Styling */
+.component-preview {
+  position: relative;
+  min-height: 200px;
+  border: 2px dashed var(--border-color, #ccc);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.preview-placeholder {
+  text-align: center;
+  color: var(--muted-text, #6c757d);
+}
+
+.preview-placeholder p {
+  margin: 0.5rem 0;
+}
+
+/* Dark Mode Adjustments */
+html.dark .proactive-check-in-demo {
+  color: var(--dark-text-color, #e1e1e1);
+}
+
+html.dark .proactive-check-in-demo h1,
+html.dark .proactive-check-in-demo h2 {
+  color: var(--dark-heading-color, #f1f1f1);
+  border-color: var(--dark-border-color, #444);
+}
+
+html.dark .demo-section {
+  background-color: var(--dark-card-bg, #2a2a2a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .control-group select,
+html.dark .control-group input[type="number"] {
+  background-color: var(--dark-input-bg, #333);
+  color: var(--dark-text-color, #e1e1e1);
+  border-color: var(--dark-border-color, #555);
+}
+
+html.dark .status-display {
+  background-color: var(--dark-code-bg, #333);
+}
+
+html.dark .status-item pre {
+  background-color: var(--dark-pre-bg, #222);
+}
+
+html.dark .component-preview {
+  border-color: var(--dark-border-color, #555);
+}
+
+html.dark .preview-placeholder {
+  color: var(--dark-muted-text, #aaa);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .proactive-check-in-demo {
+    padding: 1rem;
+  }
+  
+  .proactive-check-in-demo h1 {
+    font-size: 2rem;
+  }
+  
+  .proactive-check-in-demo h2 {
+    font-size: 1.5rem;
+  }
+  
+  .settings-controls,
+  .trigger-controls {
+    grid-template-columns: 1fr;
+  }
+  
+  .trigger-buttons {
+    flex-direction: column;
+  }
+  
+  .trigger-buttons button {
+    width: 100%;
+  }
+}
