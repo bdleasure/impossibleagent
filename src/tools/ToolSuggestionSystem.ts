@@ -1,6 +1,7 @@
 import { Agent } from "agents";
 import { ToolDiscoveryManager } from "./ToolDiscoveryManager";
 import type { ToolSuggestion } from "./ToolDiscoveryManager";
+import { ToolUsageTracker } from "./ToolUsageTracker";
 import { EmbeddingManager } from "../memory/EmbeddingManager";
 
 /**
@@ -101,12 +102,18 @@ export class ToolSuggestionSystem<Env> {
   private embeddingManager: EmbeddingManager;
   
   /**
+   * Tool usage tracker for analytics
+   */
+  private usageTracker: ToolUsageTracker<Env>;
+  
+  /**
    * Create a new ToolSuggestionSystem
    * @param agent The agent instance
    */
   constructor(private agent: Agent<Env>) {
     this.discoveryManager = new ToolDiscoveryManager<Env>(agent);
     this.embeddingManager = new EmbeddingManager();
+    this.usageTracker = new ToolUsageTracker<Env>(agent);
   }
   
   /**
@@ -116,6 +123,7 @@ export class ToolSuggestionSystem<Env> {
     // Initialize managers
     await this.discoveryManager.initialize();
     await this.embeddingManager.initialize();
+    await this.usageTracker.initialize();
     
     // Create tables for conversation context and suggestion history
     await this.agent.sql`
@@ -845,21 +853,82 @@ export class ToolSuggestionSystem<Env> {
    * Record tool selection from suggestions
    * @param suggestionId Suggestion history ID
    * @param toolId Selected tool ID
+   * @param userId User ID
+   * @param conversationId Conversation ID
    */
-  async recordToolSelection(suggestionId: string, toolId: string): Promise<void> {
+  async recordToolSelection(
+    suggestionId: string, 
+    toolId: string, 
+    userId: string, 
+    conversationId: string
+  ): Promise<void> {
+    // Update suggestion history
     await this.agent.sql`
       UPDATE tool_suggestion_history
       SET selected_tool_id = ${toolId}
       WHERE id = ${suggestionId}
     `;
+    
+    // Get suggestion history to determine if tool was suggested
+    const suggestionResult = await this.agent.sql`
+      SELECT suggested_tools, query FROM tool_suggestion_history
+      WHERE id = ${suggestionId}
+    `;
+    
+    if (suggestionResult.length > 0) {
+      const suggestedTools = JSON.parse(suggestionResult[0].suggested_tools as string);
+      const query = suggestionResult[0].query as string;
+      const wasSuggested = suggestedTools.includes(toolId);
+      
+      // Get tool details from registered tools
+      const allTools = await this.discoveryManager.getRegisteredTools();
+      const toolInfo = allTools.find(tool => tool.id === toolId);
+      
+      if (toolInfo) {
+        // Start tracking tool usage
+        const [serverId, toolName] = toolId.split(':');
+        
+        // Create context for tool usage tracking
+        const context = {
+          query,
+          intents: await this.detectIntents(query),
+          topic: await this.determineConversationTopic(query)
+        };
+        
+        // Store tracking info in agent state for later completion
+        await this.agent.setState({
+          [`toolTracking:${suggestionId}`]: {
+            trackingInfo: this.usageTracker.startTracking(
+              toolId,
+              serverId,
+              toolName,
+              conversationId,
+              userId,
+              {}, // Input params will be added when the tool is executed
+              context,
+              wasSuggested,
+              false // Auto-selected
+            ),
+            toolInfo
+          }
+        });
+      }
+    }
   }
   
   /**
    * Record tool usage success or failure
    * @param suggestionId Suggestion history ID
    * @param success Whether the tool usage was successful
+   * @param errorMessage Error message if unsuccessful
+   * @param inputParams Input parameters used
    */
-  async recordToolUsageResult(suggestionId: string, success: boolean): Promise<void> {
+  async recordToolUsageResult(
+    suggestionId: string, 
+    success: boolean, 
+    errorMessage?: string,
+    inputParams?: Record<string, any>
+  ): Promise<void> {
     // Update suggestion history
     await this.agent.sql`
       UPDATE tool_suggestion_history
@@ -878,6 +947,31 @@ export class ToolSuggestionSystem<Env> {
       
       // Record tool usage in discovery manager
       await this.discoveryManager.recordToolUsage(toolId, success);
+      
+      try {
+        // Get tracking data from SQL storage instead of using getState
+        const trackingDataResult = await this.agent.sql`
+          SELECT value FROM agent_state
+          WHERE key = ${'toolTracking:' + suggestionId}
+        `;
+        
+        if (trackingDataResult.length > 0) {
+          const trackingData = JSON.parse(trackingDataResult[0].value as string);
+          
+          if (trackingData && trackingData.trackingInfo) {
+            // End tracking with success/failure info
+            await trackingData.trackingInfo.endTracking(success, errorMessage);
+            
+            // Clean up tracking state
+            await this.agent.sql`
+              DELETE FROM agent_state
+              WHERE key = ${'toolTracking:' + suggestionId}
+            `;
+          }
+        }
+      } catch (error) {
+        console.error("Error completing tool usage tracking:", error);
+      }
     }
   }
   

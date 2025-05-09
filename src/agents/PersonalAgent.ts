@@ -16,6 +16,7 @@ import type { Entity, Relationship, GraphQueryResult } from "../knowledge/graph/
 import { BaseMCPAdapter } from "../tools/BaseMCPAdapter";
 import { ToolDiscoveryManager } from "../tools/ToolDiscoveryManager";
 import { ToolSuggestionSystem } from "../tools/ToolSuggestionSystem";
+import { ToolUsageTracker } from "../tools/ToolUsageTracker";
 
 // Define interfaces for the agent's state
 interface UserProfile {
@@ -689,6 +690,113 @@ Be helpful, supportive, and remember important details about the user.`;
     
     return knowledgeGraph.searchGraph(query, limit, offset);
   }
+  
+  /**
+   * Get tool usage statistics
+   */
+  @callable({ description: "Get usage statistics for tools" })
+  async getToolUsageStatistics(options?: {
+    toolId?: string;
+    userId?: string;
+    timeframe?: number; // Days
+    limit?: number;
+  }) {
+    const toolUsageTracker = new ToolUsageTracker(this);
+    
+    // Initialize the tool usage tracker
+    try {
+      await toolUsageTracker.initialize();
+    } catch (error) {
+      console.error("Failed to initialize tool usage tracker:", error);
+      throw error;
+    }
+    
+    // If a specific tool ID is provided, get stats for that tool
+    if (options?.toolId) {
+      return toolUsageTracker.getToolUsageStats(options.toolId);
+    }
+    
+    // If a user ID is provided, get user-specific stats
+    if (options?.userId) {
+      return toolUsageTracker.getUserToolUsageStats(options.userId);
+    }
+    
+    // Get trending tools for the specified timeframe
+    const timeframe = options?.timeframe || 7; // Default to 7 days
+    const limit = options?.limit || 10; // Default to top 10
+    
+    // Get trending tools
+    const trending = await toolUsageTracker.getTrendingTools(timeframe, limit);
+    
+    // Get aggregate statistics
+    const result = await this.sql`
+      SELECT 
+        COUNT(*) as total_events,
+        SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful_events,
+        SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) as failed_events,
+        AVG(execution_time) as avg_execution_time,
+        COUNT(DISTINCT tool_id) as unique_tools,
+        COUNT(DISTINCT user_id) as unique_users,
+        MIN(timestamp) as first_event,
+        MAX(timestamp) as last_event
+      FROM tool_usage_events
+      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
+    `;
+    
+    // Get usage by hour
+    const hourlyUsage = await this.sql`
+      SELECT 
+        CAST(strftime('%H', datetime(timestamp/1000, 'unixepoch')) AS INTEGER) as hour,
+        COUNT(*) as count
+      FROM tool_usage_events
+      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
+      GROUP BY hour
+      ORDER BY hour
+    `;
+    
+    // Get usage by day of week
+    const dailyUsage = await this.sql`
+      SELECT 
+        CAST(strftime('%w', datetime(timestamp/1000, 'unixepoch')) AS INTEGER) as day_of_week,
+        COUNT(*) as count
+      FROM tool_usage_events
+      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
+      GROUP BY day_of_week
+      ORDER BY day_of_week
+    `;
+    
+    // Format the hourly and daily usage data
+    const usageByHour = Object.fromEntries(
+      hourlyUsage.map((row: any) => [row.hour, row.count])
+    );
+    
+    const usageByDayOfWeek = Object.fromEntries(
+      dailyUsage.map((row: any) => [row.day_of_week, row.count])
+    );
+    
+    // Get the aggregate stats and ensure numeric values
+    const stats = result[0];
+    const totalEvents = Number(stats?.total_events || 0);
+    const successfulEvents = Number(stats?.successful_events || 0);
+    const failedEvents = Number(stats?.failed_events || 0);
+    
+    return {
+      trending,
+      summary: {
+        totalEvents,
+        successfulEvents,
+        failedEvents,
+        successRate: totalEvents > 0 ? successfulEvents / totalEvents : 0,
+        avgExecutionTime: Number(stats?.avg_execution_time || 0),
+        uniqueTools: Number(stats?.unique_tools || 0),
+        uniqueUsers: Number(stats?.unique_users || 0),
+        firstEvent: stats?.first_event || null,
+        lastEvent: stats?.last_event || null
+      },
+      usageByHour,
+      usageByDayOfWeek
+    };
+  }
 
   /**
    * Consolidate memories (scheduled task)
@@ -785,9 +893,10 @@ Be helpful, supportive, and remember important details about the user.`;
         const knowledgeBase = new KnowledgeBase(this);
         const knowledgeGraph = new KnowledgeGraph(this, knowledgeBase);
         
-        // Initialize tool discovery and suggestion systems
+        // Initialize tool discovery, suggestion, and tracking systems
         const toolDiscoveryManager = new ToolDiscoveryManager(this);
         const toolSuggestionSystem = new ToolSuggestionSystem(this);
+        const toolUsageTracker = new ToolUsageTracker(this);
         
         try {
           // Initialize the knowledge graph
@@ -796,6 +905,7 @@ Be helpful, supportive, and remember important details about the user.`;
           // Initialize tool systems
           await toolDiscoveryManager.initialize();
           await toolSuggestionSystem.initialize();
+          await toolUsageTracker.initialize();
           
           // Discover available tools if needed
           await toolDiscoveryManager.discoverTools({ refresh: false });
