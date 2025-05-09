@@ -92,7 +92,7 @@
    - ✅ Memory Garden Lite (2D) for early task/memory visualization (Completed May 9, 2025)
    - ✅ Memory Garden (3D) for immersive task/memory exploration (Completed May 9, 2025)
    - ✅ Ritual Moments for milestone and daily interactions (Completed May 9, 2025)
-   - ⬜ Proactive Check-In System for AI-initiated emotional engagement
+   - ✅ Proactive Check-In System for AI-initiated emotional engagement (Completed May 9, 2025)
    - ⬜ Simplified Mode to hide technical components for non-techie users
    - ⬜ Tool execution status indicators and result visualization
 
@@ -280,7 +280,27 @@
    - Added emotional engagement features to project roadmap
    - Updated `projectbrief.md` with target avatar information
 
-2. **Companion Avatar Enhancement** (Completed May 9, 2025):
+2. **Proactive Check-In System Implementation** (Completed May 9, 2025):
+   - Created comprehensive Proactive Check-In System for AI-initiated emotional engagement
+   - Implemented ProactiveCheckIn component with configurable frequency and triggers
+   - Added support for three check-in types: inactivity, sentiment, and deadline
+   - Created animated pulse indicator with different colors for each check-in type
+   - Implemented user activity monitoring with inactivity detection
+   - Added sentiment analysis integration for emotion-based check-ins
+   - Created deadline tracking for task-based check-ins
+   - Implemented ProactiveCheckInDemo component with interactive controls
+   - Added comprehensive CSS styling with responsive design and dark mode support
+   - Created route component for easy navigation to the Proactive Check-In Demo
+   - Integrated with settings synchronization for persistent preferences
+   - Added theme-aware styling with CSS variables
+   - Fixed AgentProvider integration in ProactiveCheckInRoute component
+   - Added fallback implementations for when agent context is not available
+   - Improved error handling for null agent, retrieveMemories, and updateSetting
+   - Fixed invalid hook call issue by replacing direct useTheme hook call with inline theme implementation
+   - Ensured proper data-reason attribute on icon element for correct color styling
+   - Verified demo functionality with all check-in types working correctly
+
+3. **Companion Avatar Enhancement** (Completed May 9, 2025):
    - Fixed CSS class names in CompanionAvatar component to match companion-avatar.css
    - Updated getAvatarClass method to use correct emotion class names
    - Added CSS styles for speaking indicator and speaking dots animation
