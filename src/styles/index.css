@@ -3,6 +3,7 @@
 
 /* Import component-specific styles */
 @import "./memory.css";
+@import "./lifeline.css";
 
 /* CSS Variables for memory components */
 :root {

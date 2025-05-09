@@ -12,6 +12,7 @@
    - Provides React hooks for client applications
    - Supports security and access control
    - Enables offline capabilities with client-side storage
+   - Emotional engagement features integration
 
 2. **TypeScript**
    - Primary programming language
@@ -36,6 +37,95 @@
    - Custom hooks extending SDK's React hooks
    - Component-based UI architecture
    - State management integrated with agent state
+   - Context API for Lifeline/Garden state management
+   - Redux for avatar animations and complex state
+   - Custom hooks for reusable state logic
+
+6. **Three.js**
+   - 3D visualization library for Memory Garden
+   - Interactive 3D environment for task/memory exploration
+   - Camera controls for navigation
+   - Lighting and materials for visual appeal
+   - Animation system for organic movements
+   - Scalable to AR/VR for advanced users
+
+7. **D3.js**
+   - Data visualization library for Lifeline Interface
+   - Timeline visualization with interactive nodes
+   - Zoom and pan capabilities
+   - Dynamic data binding for real-time updates
+   - Smooth transitions and animations
+   - Support for complex data relationships
+
+8. **Web Speech API**
+   - Voice input and output capabilities
+   - Real-time transcription with visual feedback
+   - Text-to-speech for AI responses
+   - Voice command recognition
+   - Integration with Companion Avatar animations
+   - Support for multiple languages
+
+9. **Chart.js**
+   - Data visualization for Tool Usage Analytics Dashboard
+   - Responsive charts for usage statistics
+   - Animation capabilities for engaging visualizations
+   - Customizable themes matching UI design
+   - Interactive elements for data exploration
+   - Support for various chart types (bar, line, pie, etc.)
+
+10. **CSS/SVG Animations**
+    - Lightweight animations for Memory Garden Lite (2D)
+    - Ritual Moments visual effects
+    - Companion Avatar mood-based animations
+    - Transition effects between interface states
+    - Responsive animations for different screen sizes
+    - Performance-optimized for low-end devices
+
+### Emotional Engagement Technologies
+
+1. **Companion Avatar System**
+   - Reactive animation framework for mood-based expressions
+   - Emotion detection through sentiment analysis
+   - WebGL-based rendering for smooth animations
+   - State machine for managing avatar emotional states
+   - Integration with voice input/output for synchronized lip movement
+   - Customizable appearance options for personalization
+   - Accessibility features for users with visual impairments
+
+2. **Memory Garden Visualization**
+   - Three.js-based 3D environment for immersive memory exploration
+   - Organic growth algorithms for visual representation of memory development
+   - Interactive elements for memory retrieval and task management
+   - Seasonal themes reflecting passage of time and relationship growth
+   - Particle effects for emotional emphasis and visual feedback
+   - Optimized rendering for both high-end and low-end devices
+   - 2D fallback (Memory Garden Lite) using SVG and Canvas
+
+3. **Ritual Moments Framework**
+   - Special UI modes for milestone interactions and daily check-ins
+   - Themed visual effects (starry sky, blooming flower, campfire)
+   - Ambient sound design for emotional reinforcement
+   - Guided interaction flows for reflection and goal-setting
+   - Progress visualization with celebratory animations
+   - Scheduling system for ritual timing and reminders
+   - Personalization based on user preferences and history
+
+4. **Lifeline Interface**
+   - D3.js-based timeline visualization with narrative structure
+   - Interactive nodes representing tasks, memories, and milestones
+   - Contextual zooming for different time perspectives
+   - Visual storytelling elements connecting related events
+   - Emotional tagging and color-coding for mood tracking
+   - Predictive visualization of future events and goals
+   - Shareable timeline snapshots for social connection
+
+5. **Sentiment Analysis Module**
+   - Emotion detection from text and voice input
+   - Mood tracking over time with visualization
+   - Adaptive responses based on detected emotional state
+   - Integration with Companion Avatar for appropriate reactions
+   - Personalized emotional baseline calibration
+   - Privacy-focused processing with user control
 
 ### AI and Machine Learning
 

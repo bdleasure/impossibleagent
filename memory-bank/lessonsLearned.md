@@ -86,6 +86,50 @@ This document captures key insights, solutions to problems, best practices, and 
    - **Solution**: Implemented configurable privacy settings with data retention policies
    - **Best Practice**: Make privacy settings granular but not overwhelming
 
+### UI Architecture
+
+1. **Emotional Engagement**:
+   - **Insight**: Emotional engagement creates a stronger bond between user and AI
+   - **Problem**: Traditional chat interfaces feel transactional and impersonal
+   - **Solution**: Implemented Companion Avatar with reactive animations and Ritual Moments for milestones
+   - **Best Practice**: Design interfaces that evoke emotional responses through personalization and celebration
+
+2. **Narrative-Driven Approach**:
+   - **Insight**: Narrative structure transforms task management into a shared journey
+   - **Problem**: Traditional task lists feel mechanical and disconnected
+   - **Solution**: Implemented Lifeline Interface with interactive nodes for tasks, memories, and milestones
+   - **Best Practice**: Create a sense of progression and shared history through visual storytelling
+
+3. **Gamified Elements**:
+   - **Insight**: Gamification makes interactions more enjoyable and memorable
+   - **Problem**: Users quickly lost interest in traditional interfaces
+   - **Solution**: Implemented Memory Garden with "plants" for task categories and "buds" for tasks
+   - **Best Practice**: Use metaphors that create a sense of growth and nurturing
+
+4. **Progressive Disclosure**:
+   - **Insight**: Non-technical users need simpler interfaces with progressive complexity
+   - **Problem**: Technical interfaces overwhelmed casual users
+   - **Solution**: Implemented Simplified Mode with progressive disclosure of advanced features
+   - **Best Practice**: Design for different user skill levels with clear paths to advanced functionality
+
+5. **Voice Interaction Integration**:
+   - **Insight**: Voice interfaces need strong visual feedback to be effective
+   - **Problem**: Voice-only interfaces lacked context and confirmation
+   - **Solution**: Implemented visual feedback components synchronized with voice interaction
+   - **Best Practice**: Combine voice with visual elements for a multimodal experience
+
+6. **3D vs. 2D Visualization**:
+   - **Insight**: 3D visualizations need 2D alternatives for accessibility and performance
+   - **Problem**: 3D Memory Garden was resource-intensive on low-end devices
+   - **Solution**: Implemented Memory Garden Lite using CSS/SVG animations
+   - **Best Practice**: Create scalable visualizations that adapt to device capabilities
+
+7. **Emotional Testing Metrics**:
+   - **Insight**: Traditional usability metrics don't capture emotional engagement
+   - **Problem**: Standard metrics missed the emotional impact of interface elements
+   - **Solution**: Developed specialized testing approaches for emotional features
+   - **Best Practice**: Measure emotional responses alongside traditional metrics
+
 ### Client Development
 
 1. **Offline Capabilities**:
@@ -99,6 +143,12 @@ This document captures key insights, solutions to problems, best practices, and 
    - **Problem**: Context was lost when switching devices
    - **Solution**: Implemented session transfer with configurable options
    - **Best Practice**: Make transfer process transparent to users
+
+3. **Proactive Interaction Model**:
+   - **Insight**: AI-initiated interactions create a more natural relationship
+   - **Problem**: User-initiated interactions felt one-sided and mechanical
+   - **Solution**: Implemented Proactive Check-In System with context-aware triggers
+   - **Best Practice**: Balance proactive engagement with respect for user attention
 
 ## Development Process Insights
 

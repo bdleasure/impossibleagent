@@ -101,18 +101,138 @@ The Tool Usage Tracking system has been successfully implemented with the follow
    - Aggregate statistics across tools and users for comprehensive analytics
    - Temporal analysis for usage patterns by time of day and day of week
 
+## Primary Target Avatar: The Reflective Planner
+
+Based on detailed analysis of potential user personas, we have identified the Reflective Planner as our primary target avatar for ImpossibleAgent. This decision guides our development priorities and UI design choices.
+
+**Key Characteristics:**
+- Age 30-50, often professionals like teachers, therapists, writers, or small business owners
+- Introspective personality with high conscientiousness and moderate introversion
+- Values both structure and emotional connection
+- Comfortable with technology but prefers intuitive, emotionally engaging interfaces
+- Often practices journaling, meditation, or mindfulness
+
+**Why They're Our Primary Target:**
+- Best alignment with our vision of a lifelong AI companion with emotional engagement
+- Significant market size (~20% of working adults)
+- High retention potential due to emotional bond with the product
+- Aligns with our current development roadmap prioritizing emotional features
+- Less likely to switch to competitors focused purely on productivity
+
+**How They'll Use ImpossibleAgent:**
+- Lifeline Interface: For tracking both tasks and personal milestones
+- Memory Garden: As a digital journal for tasks and memories
+- Ritual Moments: For daily goal-setting and reflection
+- Proactive Check-In: For emotional support and stress management
+- Simplified Mode: To focus on emotional rather than technical features
+
+**Development Implications:**
+- Prioritize emotional engagement features (Companion Avatar, Ritual Moments)
+- Design Memory Garden with reflective, journal-like qualities
+- Ensure Simplified Mode is the default for new users
+- Tailor marketing to emphasize emotional connection and persistent memory
+
 ## Next Steps
 
-With the Testing & Validation Strategy, Confidence Protocol, and Centralized Error Handling now implemented, the following tasks are priorities based on the project roadmap and current implementation status:
+With the Testing & Validation Strategy, Confidence Protocol, Centralized Error Handling, Target Avatar Definition, and UI Architecture Plan now implemented, the following tasks are priorities based on the project roadmap, current implementation status, and our focus on the Reflective Planner avatar:
 
 1. **Advanced UI Components** (Target: June 15, 2025):
-   - Implement tool usage analytics dashboard with usage statistics and trends
-   - Build tool suggestion UI with parameter input forms and context-aware suggestions
-   - Develop components for voice interaction with audio feedback
-   - Create rich media messaging components for enhanced content display
-   - Enhance memory visualization components with graph-based visualization
+   - ✅ Implement Lifeline Interface with narrative timeline for tasks/memories (Completed May 9, 2025)
+   - Develop Companion Avatar with reactive, mood-based animations (Target: May 25, 2025)
+   - Create Memory Garden Lite (2D) for early task/memory visualization (Target: May 30, 2025)
+   - Build Memory Garden (3D) for immersive task/memory exploration (Target: June 5, 2025)
+   - Implement Voice Interaction Components for conversational input/output (Accelerated: June 5, 2025):
+     - Integrate with Companion Avatar for visual feedback during voice interactions (glowing when listening)
+     - Enable voice commands for Lifeline Interface navigation (e.g., "Show last week's tasks")
+     - Add voice triggers for Ritual Moments (e.g., "Start my daily check-in")
+     - Implement natural language processing for contextual understanding
+     - Create audio feedback for task completion and notifications
+     - Support hands-free operation for accessibility
+   - Develop Ritual Moments for milestone and daily interactions (Target: June 10, 2025)
+   - Add Proactive Check-In System for AI-initiated emotional engagement:
+     - Implement context-aware triggers (sentiment analysis, task deadlines, time-based inactivity)
+     - Create user-configurable frequency settings (high, medium, low) via Settings Synchronization
+     - Integrate with Memory Garden to reference recent tasks/memories during check-ins
+     - Design non-intrusive UI indicators for proactive suggestions
+   - Create Simplified Mode to hide technical components for non-techie users:
+     - Show only Chat Interface, Lifeline Interface, Memory Garden Lite, and Ritual Moments
+     - Implement one-tap toggle to Advanced Mode via Settings menu
+     - Develop guided onboarding flow introducing key features for non-technical users
+     - Hide complex elements (MCP Server Status, Tool Analytics, Server Configuration)
+   - Build Tool Usage Analytics Dashboard with visualization of usage patterns
+   - Implement Tool Suggestion UI with parameter input forms and context-aware suggestions
+   - Develop Rich Media Messaging Components for enhanced content display
    - Add tool execution status indicators and result visualization
    - Frontend alignment: Implement Phase 2-3 in FRONTEND_DEVELOPMENT_PLAN.md
+
+2. **User Testing Phase** (Target: June 1-10, 2025):
+   - Conduct beta testing with a small group of users for emotional features
+   - Test Lifeline Interface, Memory Garden Lite, Companion Avatar, and Proactive Check-Ins
+   - Collect feedback on emotional engagement and usability
+   - Focus on non-technical users for Simplified Mode testing
+   - Evaluate voice interaction effectiveness and natural language understanding
+   - Refine animations and visual feedback based on user responses
+   - Document findings in progress.md with a testing milestone
+   - Implement improvements before the June 15, 2025 UI Components deadline
+
+   **UI Architecture Plan** (Updated May 9, 2025):
+   Based on analysis of VS Code's MCP server implementation and chat interfaces, and focusing on creating an emotionally engaging experience for users seeking a lifelong AI companion, the following UI architecture has been defined:
+
+   a. **Core Layout Structure**:
+   ```mermaid
+   graph TD
+     App[App Container] --> LeftSidebar[Left Sidebar]
+     App --> MainContent[Main Content Area]
+     App --> RightPanel[Optional Right Panel]
+     
+     LeftSidebar --> LifelineInterface[Lifeline Interface]
+     LeftSidebar --> MCPServerStatus[MCP Server Status]
+     
+     MainContent --> ChatInterface[Chat Interface]
+     MainContent --> ToolInterface[Tool Interface]
+     MainContent --> MCPServerConfig[MCP Server Config]
+     MainContent --> CompanionAvatar[Companion Avatar]
+     
+     RightPanel --> MemoryGarden[Memory Garden]
+     RightPanel --> ToolAnalytics[Tool Analytics]
+   ```
+
+   b. **Key Components**:
+   - **Left Sidebar**:
+     - Lifeline Interface: A dynamic, scrollable timeline visualizing tasks, memories, and milestones as interactive nodes
+     - Topic clusters, knowledge navigation, and memory filtering from conversation history
+     - AI-generated "future nodes" for task suggestions
+     - MCP server status indicators
+
+   - **Main Content Area**:
+     - Chat interface with message history and rich content rendering
+     - Tool execution interface with parameter forms and result visualization
+     - MCP server configuration when in that section
+     - Companion Avatar: A customizable, reactive presence that reflects context and user mood
+     - Split view capability for simultaneous chat and preview
+
+   - **Optional Right Panel**:
+     - Memory Garden: A 3D, navigable space with "plants" for task categories and "buds" for tasks/memories
+     - Tool Analytics dashboard with usage statistics and trends
+
+   - **Ritual Moments (Special Modes)**:
+     - Anniversary Mode: Starry-sky theme for relationship milestones
+     - Daily Check-In Bloom: Morning ritual for setting goals in a blooming-flower interface
+     - Reflective Campfire: Warm mode for revisiting goals/memories
+
+   c. **Visual Design Specifications**:
+   - **Color Scheme**: Dark background (#1e1e1e) with warm accents for Garden/Rituals (e.g., golds, blues)
+   - **Accent Colors**: Blue (#0078d7) for primary actions; dynamic avatar colors for mood
+   - **Typography**: Inter for tasks; handwritten-style (e.g., Caveat) for Ritual Moments
+   - **Spacing**: Base unit of 8px; organic spacing for Garden elements
+   - **Interactive Elements**: Clear hover/focus states with subtle animations; organic animations for Garden elements
+
+   d. **Unique Improvements**:
+   - **Lifeline Persistence**: Visual representation of the user-AI relationship journey
+   - **Emotional Avatar**: Reacts to user mood and context, creating a "friend" vibe
+   - **Gamified Garden**: Transforms task management into an immersive, enjoyable experience
+   - **Ritual Bonding**: Celebrates relationship milestones with special interface modes
+   - **Contextual Recommendations**: Enhanced with Lifeline/Garden integration for improved relevance
 
 2. **Security Enhancements** (Target: July 10, 2025):
    - Enhance the existing SecurityManager with production-ready encryption
@@ -125,15 +245,21 @@ With the Testing & Validation Strategy, Confidence Protocol, and Centralized Err
    - Frontend alignment: Integrate security features in client applications
 
 3. **Expand MCP Adapters** (Target: August 5, 2025):
-   - Create additional adapters for various external services
+   - Prioritize Calendar and Email Adapters for seamless daily integration (Accelerated: July 15, 2025)
    - Implement adapters for productivity tools (document editing, task management)
    - Develop adapters for social media platforms (Twitter, LinkedIn, Facebook)
    - Build adapters for smart home devices (IoT integration)
-   - Enhance calendar and scheduling adapters beyond basic implementation
-   - Improve email and communication adapters with enhanced capabilities
+   - Add Wearable Notifications for real-time reminders:
+     - Limit notifications to high-priority events (overdue tasks, Daily Check-In prompts)
+     - Integrate with Calendar Adapters for meeting reminders
+     - Allow customization via Privacy Settings in Security Enhancements
+     - Implement non-intrusive notification design with quick action buttons
+     - Support different wearable platforms (smartwatches, fitness trackers)
+   - Enhance scheduling and communication adapters with advanced capabilities
    - Frontend alignment: Develop Tool Integration UI components
 
 4. **Advanced Learning Mechanisms** (Target: September 2025):
+   - Implement Sentiment Analysis Module for enhanced mood detection
    - Enhance the LearningSystem with more sophisticated algorithms
    - Implement reinforcement learning for tool selection
    - Develop more advanced pattern recognition for improved suggestions
@@ -151,7 +277,16 @@ With the Testing & Validation Strategy, Confidence Protocol, and Centralized Err
    - Implement error handling and recovery for tool chains
    - Frontend alignment: Create specialized UI for tool chain visualization
 
-6. **Contextual Awareness & Improvement Processes** (Can be added as needed):
+6. **Marketing Teaser Campaign** (Target: June 2025):
+   - Create videos showcasing Memory Garden Lite and Ritual Moments
+   - Highlight the emotional bond between user and AI companion
+   - Leverage direct-response marketing to position ImpossibleAgent as unique
+   - Develop shareable demos of the Lifeline Interface and Companion Avatar
+   - Create promotional materials emphasizing the "lifelong AI companion" concept
+   - Prepare launch materials for the June 15, 2025 UI Components release
+   - Frontend alignment: Ensure all showcased features are polished for demos
+
+7. **Contextual Awareness & Improvement Processes** (Can be added as needed):
    - Self-Improving Cline Reflection process for multi-step tasks
    - Formal Assumption Documentation system
    - Templates and guidelines for both processes
@@ -190,21 +325,36 @@ With the Testing & Validation Strategy, Confidence Protocol, and Centralized Err
    - Priority: High
    - Rationale: Provides immediate value from the newly implemented tracking system
    - Key features: Usage statistics, trending tools, success/failure rates
+   - Design inspiration: VS Code's clean, dark-themed interface with clear data visualization
+   - Implementation approach: Use chart.js or D3.js for visualizations within Card components
 
 2. **Tool Suggestion UI**:
    - Priority: High
    - Rationale: Leverages the enhanced suggestion capabilities from the tracking system
    - Key features: Context-aware suggestions, parameter input forms
+   - Design inspiration: VS Code's MCP server cards with clear visual hierarchy
+   - Implementation approach: Create reusable ToolCard components with consistent styling
 
 3. **Voice Interaction Components**:
    - Priority: Medium
    - Rationale: Expands interaction modalities but depends on tool integration UI
    - Key features: Voice input, audio feedback
+   - Design inspiration: Minimal UI indicators for voice activity and processing
+   - Implementation approach: Use Web Speech API with visual feedback indicators
 
 4. **Rich Media Messaging**:
    - Priority: Medium
    - Rationale: Enhances content display but depends on core UI components
    - Key features: Media display, interactive elements
+   - Design inspiration: VS Code's markdown rendering with syntax highlighting
+   - Implementation approach: Extend existing memoized-markdown component with media support
+
+5. **Context Explorer**:
+   - Priority: High (New)
+   - Rationale: Replaces traditional chat history with context-aware navigation
+   - Key features: Topic clusters, knowledge graph navigation, memory exploration
+   - Design inspiration: VS Code's sidebar navigation with expandable sections
+   - Implementation approach: Create hierarchical navigation component with memory integration
 
 ## Important Patterns and Preferences
 

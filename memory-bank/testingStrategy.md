@@ -391,4 +391,202 @@ Keep tests fast to encourage frequent running:
 ### Phase 2: Expansion (June 2025)
 
 - Increase unit test coverage to meet targets
-- Implement integration tests for key component
+- Implement integration tests for key components
+- Develop UI component testing strategy
+- Implement end-to-end tests for critical user journeys
+
+## UI Component Testing Strategy
+
+To ensure the quality of our emotionally engaging UI architecture, we've developed a specialized testing approach for the new UI components:
+
+### Lifeline Interface Testing
+
+**Unit Tests:**
+- Test node rendering with different data types
+- Verify timeline navigation functionality
+- Test zoom and filtering capabilities
+- Validate topic clustering algorithms
+- Test AI-generated future nodes
+
+**Integration Tests:**
+- Verify integration with Memory Manager
+- Test interaction with Chat Interface
+- Validate data flow from agent state to visualization
+
+**Visual Regression Tests:**
+- Capture screenshots of different timeline states
+- Compare visual appearance across browsers
+- Verify responsive behavior at different screen sizes
+
+### Companion Avatar Testing
+
+**Unit Tests:**
+- Test mood detection algorithms
+- Verify animation state transitions
+- Validate color and form changes based on context
+- Test customization options
+
+**Integration Tests:**
+- Verify integration with sentiment analysis
+- Test reaction to user input and tool execution
+- Validate synchronization across devices
+
+**Visual Regression Tests:**
+- Capture avatar animations in different states
+- Verify smooth transitions between states
+- Test performance on low-end devices
+
+### Memory Garden Testing
+
+**Unit Tests:**
+- Test 3D object rendering
+- Verify navigation controls
+- Test interaction with garden elements
+- Validate data binding to visual elements
+
+**Integration Tests:**
+- Verify integration with Memory Manager
+- Test interaction with Lifeline Interface
+- Validate data flow from agent state to visualization
+
+**Performance Tests:**
+- Measure frame rate with different numbers of elements
+- Test memory usage during navigation
+- Verify loading times on different devices
+
+### Memory Garden Lite (2D) Testing
+
+**Unit Tests:**
+- Test 2D element rendering
+- Verify CSS/SVG animation functionality
+- Test interaction with garden elements
+- Validate data binding to visual elements
+
+**Integration Tests:**
+- Verify integration with Memory Manager
+- Test interaction with Lifeline Interface
+- Validate data flow from agent state to visualization
+
+**Performance Tests:**
+- Measure rendering performance on low-end devices
+- Test animation smoothness across browsers
+- Verify loading times on mobile devices
+
+### Voice Interaction Testing
+
+**Unit Tests:**
+- Test speech recognition accuracy
+- Verify text-to-speech functionality
+- Test command parsing algorithms
+- Validate visual feedback components
+
+**Integration Tests:**
+- Verify integration with Chat Interface
+- Test interaction with Companion Avatar
+- Validate command execution flow
+
+**Accessibility Tests:**
+- Test with screen readers
+- Verify keyboard navigation
+- Test with different voice patterns and accents
+- Validate multi-language support
+
+### Proactive Check-In Testing
+
+**Unit Tests:**
+- Test trigger mechanisms
+- Verify notification rendering
+- Test user control functionality
+- Validate context-awareness algorithms
+
+**Integration Tests:**
+- Verify integration with Memory Manager
+- Test interaction with Companion Avatar
+- Validate integration with Chat Interface
+
+**User Experience Tests:**
+- Measure user response to different check-in types
+- Test frequency and timing algorithms
+- Verify non-intrusiveness of notifications
+
+### Simplified Mode Testing
+
+**Unit Tests:**
+- Test component visibility toggling
+- Verify onboarding flow functionality
+- Test mode switching mechanism
+- Validate progressive disclosure logic
+
+**Integration Tests:**
+- Verify integration with user preferences
+- Test persistence across sessions
+- Validate data access in different modes
+
+**Usability Tests:**
+- Test with non-technical users
+- Measure task completion rates
+- Verify intuitive understanding of interface
+
+### Ritual Moments Testing
+
+**Unit Tests:**
+- Test trigger mechanisms
+- Verify animation rendering
+- Test integration with timeline events
+- Validate special interface modes
+
+**Integration Tests:**
+- Verify integration with Memory Explorer
+- Test interaction with Companion Avatar
+- Validate data flow from agent state to visualization
+
+**Emotional Impact Tests:**
+- Measure user emotional response to different rituals
+- Test timing and frequency algorithms
+- Verify memorability of special moments
+
+### Tool Usage Analytics Dashboard Testing
+
+**Unit Tests:**
+- Test chart rendering with different data sets
+- Verify filtering and sorting functionality
+- Test data aggregation algorithms
+- Validate interactive elements
+
+**Integration Tests:**
+- Verify integration with Tool Usage Tracker
+- Test data flow from usage events to visualization
+- Validate real-time updates
+
+**Performance Tests:**
+- Measure rendering performance with large data sets
+- Test responsiveness of interactive elements
+- Verify loading times with different amounts of data
+
+### User Testing Phase (June 1-10, 2025)
+
+A dedicated user testing phase will be conducted to gather feedback on the emotional features:
+
+**Testing Focus:**
+- Emotional engagement with Companion Avatar
+- Narrative experience of Lifeline Interface
+- Immersive quality of Memory Garden
+- Effectiveness of Ritual Moments
+- Usefulness of Proactive Check-In System
+- Accessibility of Simplified Mode
+- Natural feel of Voice Interaction
+
+**Testing Methods:**
+- Guided user sessions with task completion
+- Emotional response surveys
+- Eye-tracking for engagement measurement
+- Long-term usage tracking (7-day period)
+- Comparative testing against traditional interfaces
+- Accessibility testing with diverse user groups
+
+**Success Metrics:**
+- Emotional connection score (survey-based)
+- Task completion rates compared to traditional interfaces
+- Feature discovery and usage rates
+- User retention and engagement metrics
+- Qualitative feedback on emotional experience
