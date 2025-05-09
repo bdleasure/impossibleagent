@@ -3,10 +3,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import historyFallback from "./vite-history-fallback";
 
 export default defineConfig({
-  plugins: [cloudflare(), react(), tailwindcss(), historyFallback()],
+  plugins: [cloudflare(), react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -19,4 +18,6 @@ export default defineConfig({
       strict: true,
     },
   },
+  // Handle SPA routing by serving index.html for all 404s
+  appType: 'spa',
 });
