@@ -1,900 +1,266 @@
 /* Lifeline Interface Styles */
 
-/* Main container */
-.lifeline-interface {
+.lifeline-container {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-family: var(--font-family);
+  padding: 1rem;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
-/* Header */
 .lifeline-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
 }
 
 .lifeline-title {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: var(--heading-color);
 }
 
 .lifeline-controls {
   display: flex;
-  gap: 12px;
-  align-items: center;
+  gap: 0.5rem;
 }
 
-/* View selector */
 .lifeline-view-selector {
   display: flex;
-  background-color: var(--background-secondary);
-  border-radius: 6px;
-  overflow: hidden;
+  gap: 0.25rem;
+  background-color: var(--background-alt);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
 }
 
-.view-option {
-  padding: 6px 12px;
-  background: none;
-  border: none;
+.lifeline-view-option {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: var(--text-muted);
   transition: all 0.2s ease;
 }
 
-.view-option:hover {
-  background-color: var(--hover-color);
+.lifeline-view-option.active {
+  background-color: var(--primary);
+  color: white;
 }
 
-.view-option.active {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  font-weight: 500;
-}
-
-/* Zoom controls */
-.lifeline-zoom-controls {
-  display: flex;
-  background-color: var(--background-secondary);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.zoom-button {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-color);
-  font-size: 1.2rem;
-  transition: all 0.2s ease;
-}
-
-.zoom-button:hover {
-  background-color: var(--hover-color);
-}
-
-/* Filter button */
-.lifeline-filter-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background-color: var(--background-secondary);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--text-color);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.lifeline-filter-button:hover {
-  background-color: var(--hover-color);
-}
-
-.filter-count {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-/* Snapshot button */
-.snapshot-button {
-  padding: 6px 12px;
-  background-color: var(--background-secondary);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--text-color);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.snapshot-button:hover {
-  background-color: var(--hover-color);
-}
-
-/* Main visualization area */
-.lifeline-visualization {
+.lifeline-timeline {
   flex: 1;
   position: relative;
   overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: var(--background-alt);
 }
 
-.lifeline-svg {
-  width: 100%;
-  height: 100%;
-  cursor: grab;
-}
-
-.lifeline-svg:active {
-  cursor: grabbing;
-}
-
-/* Timeline elements */
-.timeline-line {
-  stroke: var(--border-color);
-  stroke-width: 2;
-}
-
-.timeline-axis text {
-  fill: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.timeline-axis path,
-.timeline-axis line {
-  stroke: var(--border-color);
-}
-
-.timeline-node-circle {
-  fill: var(--background-secondary);
-  stroke: var(--accent-color);
-  stroke-width: 2;
-  transition: all 0.2s ease;
-}
-
-.timeline-node-circle:hover {
-  fill: var(--accent-color-light);
-  stroke-width: 3;
-}
-
-.timeline-node-circle.memory {
-  stroke: var(--memory-color);
-}
-
-.timeline-node-circle.task {
-  stroke: var(--task-color);
-}
-
-.timeline-node-circle.milestone {
-  stroke: var(--milestone-color);
-  fill: var(--milestone-color-light);
-}
-
-.timeline-node-circle.ritual {
-  stroke: var(--ritual-color);
-}
-
-.timeline-node-circle.future {
-  stroke-dasharray: 3, 3;
-  opacity: 0.7;
-}
-
-.timeline-node-icon {
-  fill: var(--text-color);
-  font-size: 0.7rem;
-  font-weight: bold;
-  pointer-events: none;
-}
-
-.timeline-label {
-  fill: var(--text-color);
-  font-size: 0.8rem;
-  pointer-events: none;
-}
-
-.timeline-label.future {
-  fill: var(--text-muted);
-  font-style: italic;
-}
-
-.timeline-connection {
-  fill: none;
-  stroke: var(--connection-color);
-  stroke-width: 1.5;
-  opacity: 0.6;
-  transition: all 0.2s ease;
-}
-
-.timeline-connection:hover {
-  stroke-width: 2.5;
-  opacity: 0.8;
-}
-
-.timeline-connection.strong {
-  stroke-width: 2.5;
-  opacity: 0.8;
-}
-
-.timeline-connection.future {
-  stroke-dasharray: 5, 5;
-  opacity: 0.4;
-}
-
-.timeline-connection.relationship-1 {
-  stroke: var(--connection-weak);
-}
-
-.timeline-connection.relationship-2 {
-  stroke: var(--connection-light);
-}
-
-.timeline-connection.relationship-3 {
-  stroke: var(--connection-medium);
-}
-
-.timeline-connection.relationship-4 {
-  stroke: var(--connection-strong);
-}
-
-.timeline-connection.relationship-5 {
-  stroke: var(--connection-intense);
-}
-
-/* Tooltip */
-.timeline-tooltip {
+.lifeline-timeline-inner {
   position: absolute;
-  display: none;
-  background-color: var(--background-tooltip);
-  border-radius: 6px;
-  padding: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  max-width: 300px;
-  z-index: 1000;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  border: 1px solid var(--border-color);
-}
-
-.timeline-tooltip.visible {
-  display: block;
-}
-
-.tooltip-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 5px 0;
-  color: var(--heading-color);
-}
-
-.tooltip-content {
-  font-size: 0.9rem;
-  margin: 0 0 8px 0;
-  color: var(--text-color);
-}
-
-.tooltip-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* Detail panel */
-.lifeline-detail-panel {
-  position: absolute;
-  top: 0;
-  right: -400px;
-  width: 380px;
-  height: 100%;
-  background-color: var(--background-secondary);
-  border-left: 1px solid var(--border-color);
-  transition: right 0.3s ease;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-}
-
-.lifeline-detail-panel.open {
-  right: 0;
-}
-
-.detail-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.detail-panel-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--heading-color);
-}
-
-.detail-panel-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.detail-panel-close:hover {
-  background-color: var(--hover-color);
-  color: var(--text-color);
-}
-
-.detail-panel-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.detail-item {
-  margin-bottom: 20px;
-}
-
-.detail-item-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  color: var(--text-muted);
-}
-
-.detail-item-content {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: var(--text-color);
-}
-
-.detail-item-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.detail-tag {
-  background-color: var(--tag-background);
-  color: var(--tag-text);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-.emotional-tag {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.emotional-tag.joy {
-  background-color: var(--emotion-joy);
-}
-
-.emotional-tag.sadness {
-  background-color: var(--emotion-sadness);
-}
-
-.emotional-tag.anger {
-  background-color: var(--emotion-anger);
-}
-
-.emotional-tag.fear {
-  background-color: var(--emotion-fear);
-}
-
-.emotional-tag.surprise {
-  background-color: var(--emotion-surprise);
-}
-
-.emotional-tag.neutral {
-  background-color: var(--emotion-neutral);
-}
-
-.detail-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 30px;
-}
-
-.detail-action-button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.detail-action-button.primary {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  border: none;
-}
-
-.detail-action-button.primary:hover {
-  background-color: var(--accent-color-dark);
-}
-
-.detail-action-button:not(.primary) {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.detail-action-button:not(.primary):hover {
-  background-color: var(--hover-color);
-}
-
-/* Filter panel */
-.lifeline-filter-panel {
-  position: absolute;
-  top: 0;
-  right: -400px;
-  width: 380px;
-  height: 100%;
-  background-color: var(--background-secondary);
-  border-left: 1px solid var(--border-color);
-  transition: right 0.3s ease;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-}
-
-.lifeline-filter-panel.open {
-  right: 0;
-}
-
-.filter-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.filter-panel-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--heading-color);
-}
-
-.filter-panel-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.filter-panel-close:hover {
-  background-color: var(--hover-color);
-  color: var(--text-color);
-}
-
-.filter-panel-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.filter-group {
-  margin-bottom: 24px;
-}
-
-.filter-group-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--heading-color);
-}
-
-.filter-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.filter-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.filter-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.filter-checkbox.checked {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
-.filter-checkbox.checked::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 6px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.filter-label {
-  font-size: 0.9rem;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-}
-
-.filter-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.filter-action-button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-action-button.apply {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  border: none;
-}
-
-.filter-action-button.apply:hover {
-  background-color: var(--accent-color-dark);
-}
-
-.filter-action-button.reset {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.filter-action-button.reset:hover {
-  background-color: var(--hover-color);
-}
-
-/* Snapshot modal */
-.snapshot-modal {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  overflow: auto;
+  padding: 1rem;
 }
 
-.snapshot-modal-content {
-  background-color: var(--background-color);
-  border-radius: 8px;
-  width: 90%;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+.lifeline-node {
+  position: absolute;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: var(--primary);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
 }
 
-.snapshot-header {
+.lifeline-node:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.lifeline-node.memory {
+  background-color: var(--accent-blue);
+}
+
+.lifeline-node.task {
+  background-color: var(--accent-green);
+}
+
+.lifeline-node.milestone {
+  background-color: var(--accent-gold);
+  width: 2rem;
+  height: 2rem;
+}
+
+.lifeline-node.ritual {
+  background-color: var(--accent-purple);
+  border-radius: 0.25rem;
+}
+
+.lifeline-connection {
+  position: absolute;
+  height: 2px;
+  background-color: var(--border);
+  transform-origin: left center;
+  z-index: 1;
+}
+
+.lifeline-connection.narrative {
+  background-color: var(--accent-gold);
+  height: 3px;
+}
+
+.lifeline-detail-panel {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 20rem;
+  background-color: var(--background);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  z-index: 10;
+  transform-origin: bottom right;
+  transition: all 0.3s ease;
+}
+
+.lifeline-detail-panel.hidden {
+  transform: scale(0.8);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lifeline-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
 }
 
-.snapshot-title {
-  font-size: 1.2rem;
+.lifeline-detail-title {
+  font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
-  color: var(--heading-color);
 }
 
-.snapshot-close {
+.lifeline-detail-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
   cursor: pointer;
-  padding: 0;
+  color: var(--foreground-muted);
+  transition: color 0.2s ease;
+}
+
+.lifeline-detail-close:hover {
+  color: var(--foreground);
+}
+
+.lifeline-detail-content {
+  margin-bottom: 1rem;
+}
+
+.lifeline-detail-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--foreground-muted);
+}
+
+.lifeline-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.lifeline-zoom-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.lifeline-zoom-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--background);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.snapshot-close:hover {
-  background-color: var(--hover-color);
-  color: var(--text-color);
-}
-
-.snapshot-preview {
-  padding: 20px;
-  text-align: center;
-}
-
-.snapshot-image {
-  margin: 20px 0;
-  background-color: var(--background-secondary);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.snapshot-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-.snapshot-action-button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.snapshot-action-button.primary {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  border: none;
+.lifeline-zoom-button:hover {
+  background-color: var(--background-alt);
 }
 
-.snapshot-action-button.primary:hover {
-  background-color: var(--accent-color-dark);
-}
-
-.snapshot-action-button.secondary {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.snapshot-action-button.secondary:hover {
-  background-color: var(--hover-color);
-}
-
-/* Empty state */
 .lifeline-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 20px;
   text-align: center;
+  padding: 2rem;
 }
 
-.empty-state-icon {
+.lifeline-empty-icon {
   font-size: 3rem;
-  margin-bottom: 16px;
-  color: var(--text-muted);
+  margin-bottom: 1rem;
+  color: var(--foreground-muted);
 }
 
-.empty-state-title {
-  font-size: 1.5rem;
+.lifeline-empty-title {
+  font-size: 1.25rem;
   font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--heading-color);
+  margin-bottom: 0.5rem;
 }
 
-.empty-state-description {
-  font-size: 1rem;
-  color: var(--text-muted);
-  max-width: 500px;
-  margin: 0 0 24px 0;
-  line-height: 1.5;
-}
-
-.empty-state-button {
-  padding: 10px 20px;
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.empty-state-button:hover {
-  background-color: var(--accent-color-dark);
-}
-
-/* Loading and error states */
-.loading-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--error-color);
-  font-size: 1.1rem;
-  text-align: center;
-  padding: 20px;
+.lifeline-empty-description {
+  color: var(--foreground-muted);
+  margin-bottom: 1.5rem;
+  max-width: 25rem;
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
-  .lifeline-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .lifeline-detail-panel {
+    width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    transform-origin: bottom center;
   }
-
-  .lifeline-controls {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
+  
   .lifeline-view-selector {
     flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .view-option {
-    flex: 1;
-    text-align: center;
-  }
-
-  .lifeline-detail-panel,
-  .lifeline-filter-panel {
-    width: 100%;
-    right: -100%;
   }
 }
 
-/* Dark theme variables */
-.dark {
-  --background-color: #1e1e2e;
-  --background-secondary: #2a2a3c;
-  --background-tooltip: #313244;
-  --text-color: #cdd6f4;
-  --text-muted: #a6adc8;
-  --heading-color: #f5e0dc;
-  --border-color: #45475a;
-  --accent-color: #89b4fa;
-  --accent-color-light: #b4befe;
-  --accent-color-dark: #74c7ec;
-  --hover-color: #313244;
-  --text-on-accent: #1e1e2e;
-  --memory-color: #f9e2af;
-  --task-color: #a6e3a1;
-  --milestone-color: #f38ba8;
-  --milestone-color-light: rgba(243, 139, 168, 0.2);
-  --ritual-color: #cba6f7;
-  --connection-color: #6c7086;
-  --connection-weak: #6c7086;
-  --connection-light: #9399b2;
-  --connection-medium: #a6adc8;
-  --connection-strong: #bac2de;
-  --connection-intense: #cdd6f4;
-  --tag-background: #313244;
-  --tag-text: #cdd6f4;
-  --emotion-joy: #f9e2af;
-  --emotion-sadness: #74c7ec;
-  --emotion-anger: #f38ba8;
-  --emotion-fear: #cba6f7;
-  --emotion-surprise: #94e2d5;
-  --emotion-neutral: #a6adc8;
-  --error-color: #f38ba8;
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+/* Dark mode specific styles */
+[data-theme="dark"] .lifeline-connection {
+  opacity: 0.6;
 }
 
-/* Light theme variables */
-:root {
-  --background-color: #ffffff;
-  --background-secondary: #f5f5f5;
-  --background-tooltip: #ffffff;
-  --text-color: #333333;
-  --text-muted: #666666;
-  --heading-color: #111111;
-  --border-color: #e0e0e0;
-  --accent-color: #3b82f6;
-  --accent-color-light: #60a5fa;
-  --accent-color-dark: #2563eb;
-  --hover-color: #f0f0f0;
-  --text-on-accent: #ffffff;
-  --memory-color: #f59e0b;
-  --task-color: #10b981;
-  --milestone-color: #ef4444;
-  --milestone-color-light: rgba(239, 68, 68, 0.1);
-  --ritual-color: #8b5cf6;
-  --connection-color: #9ca3af;
-  --connection-weak: #d1d5db;
-  --connection-light: #9ca3af;
-  --connection-medium: #6b7280;
-  --connection-strong: #4b5563;
-  --connection-intense: #1f2937;
-  --tag-background: #e5e7eb;
-  --tag-text: #4b5563;
-  --emotion-joy: #fbbf24;
-  --emotion-sadness: #3b82f6;
-  --emotion-anger: #ef4444;
-  --emotion-fear: #8b5cf6;
-  --emotion-surprise: #06b6d4;
-  --emotion-neutral: #9ca3af;
-  --error-color: #ef4444;
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+[data-theme="dark"] .lifeline-detail-panel {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for nodes */
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.lifeline-node.highlight {
+  animation: pulse 1.5s infinite;
 }

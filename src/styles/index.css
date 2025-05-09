@@ -4,8 +4,16 @@
 /* Import component-specific styles */
 @import "./memory.css";
 @import "./lifeline.css";
+@import "./memory-garden-lite.css";
+@import "./memory-garden-3d.css";
+@import "./memory-garden-showcase.css";
+@import "./memory-garden-test-page.css";
+@import "./voice-interaction.css";
+@import "./ritual-moments.css";
+@import "./component-showcase.css";
+@import "./companion-avatar-demo.css";
 
-/* CSS Variables for memory components */
+/* CSS Variables for components */
 :root {
   /* Light mode variables */
   --background-color: #ffffff;
@@ -28,6 +36,72 @@
   --error-color: #ef4444;
   --success-color: #10b981;
   --info-color: #3b82f6;
+  --warning: #f59e0b;
+  
+  /* Companion Avatar Variables */
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --accent-gold: #f59e0b;
+  --accent-purple: #8b5cf6;
+  --background: #ffffff;
+  --foreground: #333333;
+  --background-alt: #f3f4f6;
+  --border: #e0e0e0;
+  
+  /* Voice Interaction Variables */
+  --background-secondary: #f3f4f6;
+  --background-tertiary: #e5e7eb;
+  --background-accent: #dbeafe;
+  --background-accent-subtle: #eff6ff;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-subtle: #bfdbfe;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
+  --text-on-primary: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --error: #ef4444;
+  --primary-rgb: 59, 130, 246;
+  --high-contrast-border: #000000;
+  
+  /* Ritual Moments Variables */
+  --ritual-daily-start: #4ade80;
+  --ritual-daily-end: #10b981;
+  --ritual-daily-inner: #a7f3d0;
+  --ritual-daily-outer: #059669;
+  
+  --ritual-weekly-start: #60a5fa;
+  --ritual-weekly-end: #3b82f6;
+  --ritual-weekly-inner: #bfdbfe;
+  --ritual-weekly-outer: #1d4ed8;
+  
+  --ritual-milestone-start: #f472b6;
+  --ritual-milestone-end: #ec4899;
+  --ritual-milestone-inner: #fbcfe8;
+  --ritual-milestone-outer: #be185d;
+  
+  --ritual-anniversary-start: #fcd34d;
+  --ritual-anniversary-end: #f59e0b;
+  --ritual-anniversary-inner: #fef3c7;
+  --ritual-anniversary-outer: #d97706;
+  
+  --text-on-ritual: #ffffff;
+  --text-on-ritual-secondary: rgba(255, 255, 255, 0.8);
+  --ritual-step-bg: rgba(255, 255, 255, 0.2);
+  --ritual-input-border: rgba(255, 255, 255, 0.3);
+  --ritual-input-border-focus: rgba(255, 255, 255, 0.6);
+  --ritual-input-bg: rgba(255, 255, 255, 0.1);
+  --ritual-input-shadow: rgba(255, 255, 255, 0.2);
+  --ritual-button-bg: rgba(255, 255, 255, 0.9);
+  --ritual-button-bg-hover: #ffffff;
+  --text-on-ritual-button: #1f2937;
+  --ritual-button-secondary-bg: rgba(255, 255, 255, 0.2);
+  --ritual-button-secondary-bg-hover: rgba(255, 255, 255, 0.3);
+  --text-on-ritual-button-secondary: #ffffff;
+  --ritual-progress-bg: rgba(255, 255, 255, 0.2);
+  --ritual-progress-fill: rgba(255, 255, 255, 0.8);
 }
 
 /* Dark mode variables */
@@ -52,4 +126,59 @@
   --error-color: #f87171;
   --success-color: #34d399;
   --info-color: #60a5fa;
+  --warning: #fbbf24;
+  
+  /* Companion Avatar Variables - Dark Mode */
+  --accent-green: #059669;
+  --accent-blue: #2563eb;
+  --accent-gold: #d97706;
+  --accent-purple: #7c3aed;
+  --background: #1f2937;
+  --foreground: #f3f4f6;
+  --background-alt: #374151;
+  --border: #4b5563;
+  
+  /* Voice Interaction Variables - Dark Mode */
+  --background-secondary: #1f2937;
+  --background-tertiary: #111827;
+  --background-accent: #1e3a8a;
+  --background-accent-subtle: #172554;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-subtle: #1e40af;
+  --text-primary: #f9fafb;
+  --text-secondary: #e5e7eb;
+  --text-tertiary: #9ca3af;
+  --text-on-primary: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+  --error: #ef4444;
+  --primary-rgb: 59, 130, 246;
+  --high-contrast-border: #ffffff;
+  
+  /* Ritual Moments Variables - Dark Mode */
+  --ritual-daily-start: #059669;
+  --ritual-daily-end: #047857;
+  --ritual-daily-inner: #065f46;
+  --ritual-daily-outer: #022c22;
+  
+  --ritual-weekly-start: #1d4ed8;
+  --ritual-weekly-end: #1e40af;
+  --ritual-weekly-inner: #1e3a8a;
+  --ritual-weekly-outer: #172554;
+  
+  --ritual-milestone-start: #be185d;
+  --ritual-milestone-end: #9d174d;
+  --ritual-milestone-inner: #831843;
+  --ritual-milestone-outer: #500724;
+  
+  --ritual-anniversary-start: #d97706;
+  --ritual-anniversary-end: #b45309;
+  --ritual-anniversary-inner: #92400e;
+  --ritual-anniversary-outer: #78350f;
+  
+  --ritual-input-bg: rgba(0, 0, 0, 0.2);
+  --ritual-button-bg: rgba(255, 255, 255, 0.8);
+  --ritual-button-secondary-bg: rgba(255, 255, 255, 0.15);
+  --ritual-button-secondary-bg-hover: rgba(255, 255, 255, 0.25);
 }

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { MemoryGardenLite } from "./MemoryGardenLite";
-import type { MemoryNode } from "../3d/MemoryGarden";
+import { MemoryGarden } from "./MemoryGarden";
+import type { MemoryNode } from "./MemoryGarden";
 
 /**
- * Memory Garden Lite Demo Component
+ * Memory Garden Demo Component (3D)
  * 
- * A demonstration component for the 2D Memory Garden Lite with sample data
+ * A demonstration component for the 3D Memory Garden with sample data
  * and controls to showcase its features and capabilities.
  */
-export function MemoryGardenLiteDemo() {
+export function MemoryGardenDemo() {
   // Sample memory data
   const sampleMemories: MemoryNode[] = [
     {
@@ -87,7 +87,9 @@ export function MemoryGardenLiteDemo() {
   const [memories, setMemories] = useState<MemoryNode[]>(sampleMemories);
   const [selectedMemory, setSelectedMemory] = useState<MemoryNode | null>(null);
   const [season, setSeason] = useState<"spring" | "summer" | "autumn" | "winter">("spring");
-  const [height, setHeight] = useState<number>(500);
+  const [environmentType, setEnvironmentType] = useState<"forest" | "meadow" | "beach" | "mountain">("forest");
+  const [timeOfDay, setTimeOfDay] = useState<"dawn" | "day" | "dusk" | "night">("day");
+  const [height, setHeight] = useState<number>(600);
 
   // Handle memory selection
   const handleMemorySelect = (memory: MemoryNode) => {
@@ -100,14 +102,24 @@ export function MemoryGardenLiteDemo() {
     setSeason(newSeason);
   };
 
+  // Handle environment type change
+  const handleEnvironmentTypeChange = (newType: "forest" | "meadow" | "beach" | "mountain") => {
+    setEnvironmentType(newType);
+  };
+
+  // Handle time of day change
+  const handleTimeOfDayChange = (newTime: "dawn" | "day" | "dusk" | "night") => {
+    setTimeOfDay(newTime);
+  };
+
   // Handle height change
   const handleHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setHeight(parseInt(event.target.value, 10));
   };
 
   return (
-    <div className="memory-garden-lite-demo">
-      <h2 className="text-2xl font-bold mb-6">Memory Garden Lite (2D)</h2>
+    <div className="memory-garden-demo">
+      <h2 className="text-2xl font-bold mb-6">Memory Garden (3D)</h2>
       
       <div className="demo-controls grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg mb-6">
         <div>
@@ -165,11 +177,111 @@ export function MemoryGardenLiteDemo() {
             </div>
             
             <div>
+              <label className="block mb-2">Environment Type</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="environmentType" 
+                    value="forest" 
+                    checked={environmentType === "forest"} 
+                    onChange={() => handleEnvironmentTypeChange("forest")}
+                    className="mr-1"
+                  />
+                  Forest
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="environmentType" 
+                    value="meadow" 
+                    checked={environmentType === "meadow"} 
+                    onChange={() => handleEnvironmentTypeChange("meadow")}
+                    className="mr-1"
+                  />
+                  Meadow
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="environmentType" 
+                    value="beach" 
+                    checked={environmentType === "beach"} 
+                    onChange={() => handleEnvironmentTypeChange("beach")}
+                    className="mr-1"
+                  />
+                  Beach
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="environmentType" 
+                    value="mountain" 
+                    checked={environmentType === "mountain"} 
+                    onChange={() => handleEnvironmentTypeChange("mountain")}
+                    className="mr-1"
+                  />
+                  Mountain
+                </label>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block mb-2">Time of Day</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="timeOfDay" 
+                    value="dawn" 
+                    checked={timeOfDay === "dawn"} 
+                    onChange={() => handleTimeOfDayChange("dawn")}
+                    className="mr-1"
+                  />
+                  Dawn
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="timeOfDay" 
+                    value="day" 
+                    checked={timeOfDay === "day"} 
+                    onChange={() => handleTimeOfDayChange("day")}
+                    className="mr-1"
+                  />
+                  Day
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="timeOfDay" 
+                    value="dusk" 
+                    checked={timeOfDay === "dusk"} 
+                    onChange={() => handleTimeOfDayChange("dusk")}
+                    className="mr-1"
+                  />
+                  Dusk
+                </label>
+                <label className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="timeOfDay" 
+                    value="night" 
+                    checked={timeOfDay === "night"} 
+                    onChange={() => handleTimeOfDayChange("night")}
+                    className="mr-1"
+                  />
+                  Night
+                </label>
+              </div>
+            </div>
+            
+            <div>
               <label className="block mb-2">Garden Height</label>
               <input 
                 type="range" 
                 min="300" 
-                max="700" 
+                max="800" 
                 step="50" 
                 value={height} 
                 onChange={handleHeightChange}
@@ -207,22 +319,24 @@ export function MemoryGardenLiteDemo() {
         </div>
       </div>
       
-      <MemoryGardenLite 
+      <MemoryGarden 
         memories={memories}
         onMemorySelect={handleMemorySelect}
         season={season}
+        environmentType={environmentType}
+        timeOfDay={timeOfDay}
         height={height}
       />
       
       <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <h3 className="text-lg font-semibold mb-3">About Memory Garden Lite (2D)</h3>
+        <h3 className="text-lg font-semibold mb-3">About Memory Garden (3D)</h3>
         <p className="mb-2">
-          Memory Garden Lite is a lightweight 2D visualization of memories and tasks.
-          It's optimized for mobile devices and browsers without WebGL support.
+          Memory Garden (3D) is an immersive Three.js-based visualization of memories and tasks.
+          It provides an intuitive way to explore and interact with your memories and tasks in a 3D environment.
         </p>
         <p>
-          Features include seasonal themes, CSS animations for subtle movement effects,
-          responsive design, and accessibility with keyboard navigation.
+          Features include organic growth algorithms, 3D models, immersive navigation,
+          visual connections between related memories, and special effects for important memories.
         </p>
       </div>
     </div>
