@@ -10,7 +10,9 @@
     "test": "vitest",
     "types": "wrangler types",
     "format": "prettier --write .",
-    "check": "prettier . --check && biome lint && tsc"
+    "check": "prettier . --check && biome lint && tsc",
+    "save": "powershell -ExecutionPolicy Bypass -File .\\git-save.ps1",
+    "fix-push": "powershell -ExecutionPolicy Bypass -File .\\git-save.ps1 --fix-blocked-push"
   },
   "keywords": [
     "cloudflare",

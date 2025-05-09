@@ -141,4 +141,4 @@ dist
 # Cloudflare
 .wrangler
 .dev.vars
-
+.dev.vars.secrets
