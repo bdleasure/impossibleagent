@@ -34,6 +34,17 @@ export function ComponentShowcase() {
 
       <div className="showcase-grid">
         <Card className="showcase-card">
+          <h2>Chat Application</h2>
+          <p>
+            The main chat interface for interacting with the ImpossibleAgent.
+            Try asking questions or using the available tools.
+          </p>
+          <Link to="/chat">
+            <Button>Open Chat</Button>
+          </Link>
+        </Card>
+
+        <Card className="showcase-card">
           <h2>Memory Garden</h2>
           <p>
             A visualization of memories and tasks in an organic, garden-like environment.

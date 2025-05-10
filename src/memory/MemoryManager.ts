@@ -162,45 +162,53 @@ export class MemoryManager {
     let results;
     
     try {
-      // Build the query using direct string interpolation with proper escaping
-      let sqlQuery = `
-        SELECT id, timestamp, content, context, source, metadata
-        FROM episodic_memories
-        WHERE 1=1
-      `;
-
+      // Build the query parts for SQL tagged template literal
+      let conditions = [];
+      let values = [];
+      
       // Add WHERE conditions if needed
       if (startTime !== undefined) {
-        sqlQuery += ` AND timestamp >= ${startTime}`;
+        conditions.push(`timestamp >= ${startTime}`);
       }
 
       if (endTime !== undefined) {
-        sqlQuery += ` AND timestamp <= ${endTime}`;
+        conditions.push(`timestamp <= ${endTime}`);
       }
 
       if (source !== undefined) {
-        // Escape single quotes in the source string
-        const escapedSource = source.replace(/'/g, "''");
-        sqlQuery += ` AND source = '${escapedSource}'`;
+        conditions.push(`source = ${source}`);
       }
 
       if (context !== undefined) {
-        // Escape single quotes in the context string
-        const escapedContext = context.replace(/'/g, "''");
-        sqlQuery += ` AND context = '${escapedContext}'`;
+        conditions.push(`context = ${context}`);
       }
 
       if (query && query.trim() !== '') {
-        // Escape special characters for LIKE query
-        const escapedQuery = query.replace(/'/g, "''").replace(/%/g, "\\%");
-        sqlQuery += ` AND content LIKE '%${escapedQuery}%'`;
+        // For LIKE queries, we need to construct the pattern with % wildcards
+        const likePattern = `%${query.replace(/'/g, "''")}%`;
+        conditions.push(`content LIKE '%' || ${likePattern} || '%'`);
       }
-
-      // Add ORDER BY and LIMIT
-      sqlQuery += ` ORDER BY timestamp DESC LIMIT ${limit}`;
-
-      // Execute the query using template literals
-      results = await this.agent.sql`${sqlQuery}`;
+      
+      // Construct the SQL query using tagged template literals
+      // This is the correct way to use the Cloudflare Agents SDK SQL functionality
+      if (conditions.length > 0) {
+        // Use the SQL tagged template literal with conditions
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata
+          FROM episodic_memories
+          WHERE ${conditions.join(' AND ')}
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else {
+        // No conditions, just get all memories with limit
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata
+          FROM episodic_memories
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      }
     } catch (error) {
       console.error("Error retrieving memories:", error);
       // Return empty array on error

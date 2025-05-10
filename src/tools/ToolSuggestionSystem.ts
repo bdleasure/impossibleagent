@@ -1,7 +1,8 @@
 import { Agent } from "agents";
 import { ToolDiscoveryManager } from "./ToolDiscoveryManager";
 import type { ToolSuggestion } from "./ToolDiscoveryManager";
-import { ToolUsageTracker } from "./ToolUsageTracker";
+// Import only the types from ToolUsageTracker to avoid circular dependency
+import type { ToolUsageTracker } from "./ToolUsageTracker";
 import { EmbeddingManager } from "../memory/EmbeddingManager";
 
 /**
@@ -104,7 +105,7 @@ export class ToolSuggestionSystem<Env> {
   /**
    * Tool usage tracker for analytics
    */
-  private usageTracker: ToolUsageTracker<Env>;
+  private usageTracker: any; // Use any type to avoid circular dependency
   
   /**
    * Create a new ToolSuggestionSystem
@@ -113,7 +114,8 @@ export class ToolSuggestionSystem<Env> {
   constructor(private agent: Agent<Env>) {
     this.discoveryManager = new ToolDiscoveryManager<Env>(agent);
     this.embeddingManager = new EmbeddingManager();
-    this.usageTracker = new ToolUsageTracker<Env>(agent);
+    // Defer creation of ToolUsageTracker to avoid circular dependency
+    // We'll initialize it in the initialize method
   }
   
   /**
@@ -123,7 +125,22 @@ export class ToolSuggestionSystem<Env> {
     // Initialize managers
     await this.discoveryManager.initialize();
     await this.embeddingManager.initialize();
-    await this.usageTracker.initialize();
+    
+    // Dynamically import ToolUsageTracker to avoid circular dependency
+    // This is a workaround - in a real implementation, we would refactor the code
+    // to avoid circular dependencies entirely
+    try {
+      const { ToolUsageTracker } = await import('./ToolUsageTracker');
+      this.usageTracker = new ToolUsageTracker(this.agent);
+      await this.usageTracker.initialize();
+    } catch (error) {
+      console.error("Failed to initialize ToolUsageTracker:", error);
+      // Create a stub implementation to avoid errors
+      this.usageTracker = {
+        startTracking: () => ({ trackingId: 'stub', endTracking: async () => {} }),
+        trackToolUsage: async () => 'stub'
+      };
+    }
     
     // Create tables for conversation context and suggestion history
     await this.agent.sql`

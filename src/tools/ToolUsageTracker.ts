@@ -1,6 +1,7 @@
 import { Agent } from "agents";
 import { ToolDiscoveryManager } from "./ToolDiscoveryManager";
-import { ToolSuggestionSystem } from "./ToolSuggestionSystem";
+// Remove the circular import
+// import { ToolSuggestionSystem } from "./ToolSuggestionSystem";
 
 /**
  * Interface for tool usage event
@@ -357,17 +358,13 @@ export class ToolUsageTracker<Env> {
   private discoveryManager: ToolDiscoveryManager<Env>;
   
   /**
-   * Tool suggestion system
-   */
-  private suggestionSystem: ToolSuggestionSystem<Env>;
-  
-  /**
    * Create a new ToolUsageTracker
    * @param agent The agent instance
    */
   constructor(private agent: Agent<Env>) {
     this.discoveryManager = new ToolDiscoveryManager<Env>(agent);
-    this.suggestionSystem = new ToolSuggestionSystem<Env>(agent);
+    // Remove the circular dependency
+    // this.suggestionSystem = new ToolSuggestionSystem<Env>(agent);
   }
   
   /**
@@ -376,7 +373,8 @@ export class ToolUsageTracker<Env> {
   async initialize(): Promise<void> {
     // Initialize managers
     await this.discoveryManager.initialize();
-    await this.suggestionSystem.initialize();
+    // Remove the circular dependency
+    // await this.suggestionSystem.initialize();
     
     // Create tables for tool usage tracking
     await this.agent.sql`
