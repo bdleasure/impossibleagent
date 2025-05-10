@@ -1,168 +1,138 @@
-import { useState, useCallback } from "react";
-import type { MemoryRetrievalOptions, MemoryRetrievalResult } from "../memory/LearningEnhancedMemoryRetrieval";
-import type { Agent } from "agents";
-import { useAgent } from "./useAgent";
-import type { LearningEnhancedMemoryRetrieval } from "../memory/LearningEnhancedMemoryRetrieval";
+import { useState, useCallback } from 'react';
+import type { Agent } from 'agents/react';
 
-// Extend the Agent interface to include the learningMemoryRetrieval property
-declare module "agents" {
-  interface Agent<Env> {
-    learningMemoryRetrieval?: LearningEnhancedMemoryRetrieval;
-    getMemoryRetrieval?: () => Promise<LearningEnhancedMemoryRetrieval>;
-  }
+/**
+ * Options for memory retrieval
+ */
+export interface MemoryRetrievalOptions {
+  limit?: number;
+  threshold?: number;
+  includeMetadata?: boolean;
+  timeframe?: 'recent' | 'all' | { start: Date; end: Date };
 }
 
 /**
- * Hook for using the learning-enhanced memory retrieval system
+ * Result of memory retrieval
  */
-export function useLearningMemoryRetrieval(agentInstance?: Agent<any>) {
-  const agentContext = useAgent();
-  const agent = agentInstance || agentContext;
-  
+export interface MemoryRetrievalResult {
+  memories: any[];
+  relevanceScores: number[];
+  metadata?: any[];
+}
+
+/**
+ * Hook for learning-enhanced memory retrieval
+ * Provides functions to interact with the memory system
+ */
+export function useLearningMemoryRetrieval(agent?: Agent<any, unknown>) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [result, setResult] = useState<MemoryRetrievalResult | null>(null);
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackIsLoading, setFeedbackIsLoading] = useState(false);
   const [feedbackError, setFeedbackError] = useState<Error | null>(null);
-
-  /**
-   * Get the memory retrieval system from the agent
-   */
-  const getMemoryRetrieval = useCallback(async () => {
-    if (!agent) {
-      throw new Error("Agent not available");
-    }
-    
-    // If the agent has a getMemoryRetrieval method, use it
-    if (agent.getMemoryRetrieval) {
-      return await agent.getMemoryRetrieval();
-    }
-    
-    // Otherwise, use the learningMemoryRetrieval property directly
-    if (agent.learningMemoryRetrieval) {
-      return agent.learningMemoryRetrieval;
-    }
-    
-    throw new Error("Memory retrieval system not available on agent");
-  }, [agent]);
-
+  
   /**
    * Retrieve memories based on a query
    */
-  const retrieveMemories = useCallback(
-    async (query: string, options: MemoryRetrievalOptions = {}) => {
-      if (!query.trim()) {
-        setError(new Error("Query cannot be empty"));
-        return null;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Get the memory retrieval system
-        const memoryRetrieval = await getMemoryRetrieval();
-        
-        // Retrieve memories
-        const retrievalResult = await memoryRetrieval.retrieveMemories(query, options);
-        setResult(retrievalResult);
-        return retrievalResult;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        setError(error);
-        return null;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [getMemoryRetrieval]
-  );
-
+  const retrieveMemories = useCallback(async (
+    query: string,
+    options?: MemoryRetrievalOptions
+  ): Promise<MemoryRetrievalResult | null> => {
+    if (!agent) return null;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await agent.call('retrieveMemories', [query, options]);
+      return result as MemoryRetrievalResult;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [agent]);
+  
   /**
-   * Submit feedback on a memory retrieval
+   * Submit feedback on memory retrieval
    */
-  const submitFeedback = useCallback(
-    async (feedback: {
-      queryId: string;
-      memoryId: string;
-      relevanceRating: number;
-      accuracyRating: number;
-      userComment?: string;
-    }) => {
-      setFeedbackSubmitting(true);
-      setFeedbackError(null);
-      
-      try {
-        // Get the memory retrieval system
-        const memoryRetrieval = await getMemoryRetrieval();
-        
-        // Submit feedback
-        await memoryRetrieval.recordRetrievalFeedback(feedback);
-
-        // Update the result to mark this memory as having feedback collected
-        if (result && result.queryId === feedback.queryId) {
-          setResult(prevResult => {
-            if (!prevResult) return null;
-
-            // Create a new metadata object with the updated feedbackCollected array
-            const metadata = {
-              ...prevResult.metadata,
-              feedbackCollected: [
-                ...(prevResult.metadata?.feedbackCollected || []),
-                feedback.memoryId
-              ]
-            };
-
-            // Return the updated result
-            return {
-              ...prevResult,
-              metadata
-            };
-          });
-        }
-
-        return true;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        setFeedbackError(error);
+  const submitFeedback = useCallback(async (feedback: {
+    memoryId: string;
+    isRelevant: boolean;
+    query?: string;
+  }): Promise<boolean> => {
+    if (!agent) return false;
+    
+    setFeedbackIsLoading(true);
+    setFeedbackError(null);
+    
+    try {
+      await agent.call('submitMemoryFeedback', [feedback]);
+      return true;
+    } catch (err) {
+      setFeedbackError(err instanceof Error ? err : new Error(String(err)));
+      return false;
+    } finally {
+      setFeedbackIsLoading(false);
+    }
+  }, [agent]);
+  
+  /**
+   * Mark a message as important for memory
+   */
+  const markAsImportant = useCallback((messageId: string): Promise<boolean> => {
+    if (!agent) return Promise.resolve(false);
+    
+    return agent.call('markMessageAsImportant', [messageId])
+      .then(() => true)
+      .catch((err) => {
+        console.error('Error marking message as important:', err);
         return false;
-      } finally {
-        setFeedbackSubmitting(false);
-      }
-    },
-    [getMemoryRetrieval, result]
-  );
-
+      });
+  }, [agent]);
+  
   /**
-   * Check if feedback has been collected for a memory
+   * Provide feedback on a message (like/dislike)
    */
-  const hasFeedback = useCallback(
-    (memoryId: string) => {
-      if (!result || !result.metadata?.feedbackCollected) {
+  const provideFeedback = useCallback((
+    messageId: string, 
+    feedback: 'like' | 'dislike'
+  ): Promise<boolean> => {
+    if (!agent) return Promise.resolve(false);
+    
+    return agent.call('provideMessageFeedback', [messageId, feedback])
+      .then(() => true)
+      .catch((err) => {
+        console.error('Error providing message feedback:', err);
         return false;
-      }
-
-      return result.metadata.feedbackCollected.includes(memoryId);
-    },
-    [result]
-  );
-
+      });
+  }, [agent]);
+  
   /**
-   * Clear the current result
+   * Retrieve memories related to the current conversation
    */
-  const clearResult = useCallback(() => {
-    setResult(null);
-  }, []);
-
+  const retrieveRelatedMemories = useCallback((
+    options?: MemoryRetrievalOptions
+  ): Promise<MemoryRetrievalResult | null> => {
+    if (!agent) return Promise.resolve(null);
+    
+    return agent.call('retrieveRelatedMemories', [options])
+      .then((result) => result as MemoryRetrievalResult)
+      .catch((err) => {
+        console.error('Error retrieving related memories:', err);
+        return null;
+      });
+  }, [agent]);
+  
   return {
     retrieveMemories,
     submitFeedback,
-    hasFeedback,
-    clearResult,
-    result,
+    markAsImportant,
+    provideFeedback,
+    retrieveRelatedMemories,
     isLoading,
     error,
-    feedbackSubmitting,
+    feedbackIsLoading,
     feedbackError
   };
 }

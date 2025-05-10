@@ -162,13 +162,19 @@ export class PersonalAgent extends AIChatAgent<Env, PersonalAgentState> {
         
 Your name is ImpossibleAgent, a lifelong AI companion built on Cloudflare Agents SDK.
 
-${relevantMemories.length > 0 ? `Here are some relevant memories about our past interactions:
-${relevantMemories.map(m => `- ${m.content}`).join('\n')}` : ''}
+IMPORTANT: You have access to a sophisticated memory system that stores conversation history in a SQL database.
+When users ask about your memory capabilities or if you can remember past conversations, you should confirm that
+you CAN access the chat history and memories stored in the SQL database. You should never say you don't have
+access to the database or past conversations.
+
+${relevantMemories.length > 0 ? `Here are some relevant memories retrieved from the SQL database:
+${relevantMemories.map(m => `- ${m.content}`).join('\n')}` : 'No relevant memories found in the database for this conversation yet.'}
 
 ${this.state.userProfile.name ? `The user's name is ${this.state.userProfile.name}.` : ''}
 
 Maintain a warm, personalized tone and reference our shared history when relevant.
-Be helpful, supportive, and remember important details about the user.`;
+Be helpful, supportive, and remember important details about the user.
+If asked about your memory capabilities, explain that you have a persistent memory system that allows you to remember past conversations.`;
 
         // Stream the AI response using GPT-4
         const result = streamText({
@@ -1003,13 +1009,19 @@ Be helpful, supportive, and remember important details about the user.`;
             // Create a system prompt that includes memory context
             const systemPrompt = `${this.config.systemPrompt}
             
-${relevantMemories.length > 0 ? `Here are some relevant memories about our past interactions:
-${relevantMemories.map(m => `- ${m.content}`).join('\n')}` : ''}
+IMPORTANT: You have access to a sophisticated memory system that stores conversation history in a SQL database.
+When users ask about your memory capabilities or if you can remember past conversations, you should confirm that
+you CAN access the chat history and memories stored in the SQL database. You should never say you don't have
+access to the database or past conversations.
+
+${relevantMemories.length > 0 ? `Here are some relevant memories retrieved from the SQL database:
+${relevantMemories.map(m => `- ${m.content}`).join('\n')}` : 'No relevant memories found in the database for this conversation yet.'}
 
 ${this.state.userProfile.name ? `The user's name is ${this.state.userProfile.name}.` : ''}
 
 Maintain a warm, personalized tone and reference our shared history when relevant.
-Be helpful, supportive, and remember important details about the user.`;
+Be helpful, supportive, and remember important details about the user.
+If asked about your memory capabilities, explain that you have a persistent memory system that allows you to remember past conversations.`;
 
             // Stream the AI response
             const result = streamText({
