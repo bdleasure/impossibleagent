@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { MessageTree } from '../components/enhanced-chat/types';
+import type { MessageTree } from '../types/message';
 import { debounce } from '../utils/debounce';
 
 /**

@@ -1,4 +1,4 @@
-import type { Message, MessageTree } from "../components/enhanced-chat/types";
+import type { Message, MessageTree } from "../types/message";
 
 /**
  * Builds a tree structure from flat messages
