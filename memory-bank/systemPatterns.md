@@ -48,7 +48,45 @@ graph TD
 - Leverage SDK's `this.setState` and `this.state` for state management
 - Utilize SDK's tool system for external integrations
 
-### 2. Multi-Layered Memory Architecture
+### 2. SQL Query Implementation with Cloudflare Agent SDK
+
+**Decision**: Use SQL tagged template literals for database operations with the Cloudflare Agent SDK.
+
+**Rationale**:
+- The Cloudflare Agent SDK requires a specific approach to SQL queries
+- Tagged template literals provide proper parameter binding and SQL injection protection
+- Direct use of `sql` tagged template literals is more reliable than prepare/bind pattern
+- Proper implementation prevents "near '?': syntax error at offset 0" errors
+
+**Implementation Pattern**:
+- Use the `sql` tagged template literal directly for queries
+- Properly interpolate parameters within the template literal
+- Build dynamic conditions using string concatenation with proper parameter binding
+- Avoid using the prepare/bind pattern which can cause syntax errors with the SDK
+
+**Example**:
+```typescript
+// CORRECT: Using SQL tagged template literals directly
+const memories = await this.agent.sql`
+  SELECT * FROM memories 
+  WHERE user_id = ${userId} 
+  AND timestamp > ${startDate}
+  ORDER BY timestamp DESC
+  LIMIT 10
+`;
+
+// INCORRECT: Using prepare/bind pattern (causes errors)
+const query = this.agent.prepare(`
+  SELECT * FROM memories 
+  WHERE user_id = ? 
+  AND timestamp > ?
+  ORDER BY timestamp DESC
+  LIMIT 10
+`);
+const memories = query.bind(userId, startDate).all();
+```
+
+### 3. Multi-Layered Memory Architecture
 
 **Decision**: Implement a sophisticated memory system with multiple types of memory and retrieval mechanisms.
 

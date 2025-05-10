@@ -12,6 +12,29 @@ The project has also made significant progress on the **Memory System**, **Knowl
 
 ## Recent Changes
 
+### SQL Query Fix in Memory System
+
+The SQL query implementation in the MemoryManager.ts file has been fixed as of May 9, 2025, resolving a critical issue that was causing "near '?': syntax error at offset 0" errors:
+
+1. **SQL Query Implementation**:
+   - Fixed incorrect SQL query implementation that was using the prepare/bind pattern
+   - Implemented proper SQL tagged template literals with the Cloudflare Agent SDK's SQL functionality
+   - Replaced `this.agent.prepare(baseQuery).bind(...params).all()` with direct SQL tagged template literals
+   - Implemented proper condition building for dynamic SQL queries that works with the Cloudflare Agent SDK
+   - Verified fix by testing the chat functionality with memory retrieval operations
+
+2. **Documentation Updates**:
+   - Added new entry in lessonsLearned.md about SQL query implementation with Cloudflare Agent SDK
+   - Updated systemPatterns.md with a new section on SQL Query Implementation with Cloudflare Agent SDK
+   - Added detailed example code showing correct and incorrect SQL query patterns
+   - Updated progress.md with a new milestone for the SQL query fix
+
+3. **Key Learnings**:
+   - The Cloudflare Agent SDK requires using SQL tagged template literals directly
+   - The prepare/bind pattern causes syntax errors with the SDK's SQL implementation
+   - Proper parameter interpolation within template literals is essential for security
+   - Dynamic condition building requires careful string concatenation with proper parameter binding
+
 ### Client-Side Routing Implementation
 
 The Client-Side Routing system has been implemented as of May 9, 2025, providing seamless navigation between different components of the ImpossibleAgent UI:

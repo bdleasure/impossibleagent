@@ -6,7 +6,13 @@ This document captures key insights, solutions to problems, best practices, and 
 
 ### Memory System
 
-1. **SQL Schema Design**:
+1. **SQL Query Implementation with Cloudflare Agent SDK**:
+   - **Insight**: Cloudflare Agent SDK requires specific SQL tagged template literal syntax
+   - **Problem**: Incorrect SQL query implementation caused "near '?': syntax error at offset 0" errors
+   - **Solution**: Implemented proper SQL tagged template literals with the SDK's SQL functionality
+   - **Best Practice**: Use `sql` tagged template literals directly rather than prepare/bind pattern
+
+2. **SQL Schema Design**:
    - **Insight**: Proper indexing is critical for query performance in memory retrieval
    - **Problem**: Initial queries were slow when retrieving memories by content or context
    - **Solution**: Added appropriate indexes on timestamp, content, and context columns
