@@ -182,6 +182,21 @@ export class KnowledgeGraphError extends AppError {
 }
 
 /**
+ * Error for MCP operations
+ */
+export class MCPError extends AppError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super({
+      message,
+      code: "MCP_ERROR",
+      statusCode: 500,
+      isOperational: true,
+      context,
+    });
+  }
+}
+
+/**
  * Error for offline operations
  */
 export class OfflineError extends AppError {
@@ -383,4 +398,24 @@ export async function withTimeout<T>(
     operation,
     createTimeout(timeoutMs, timeoutMessage),
   ]);
+}
+
+/**
+ * Wraps MCP operations with error handling
+ */
+export async function withMCPErrorHandling<T>(
+  operation: () => Promise<T>,
+  toolName: string,
+  context?: Record<string, unknown>
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new MCPError(`MCP tool '${toolName}' operation failed: ${message}`, {
+      toolName,
+      originalError: error,
+      ...context,
+    });
+  }
 }

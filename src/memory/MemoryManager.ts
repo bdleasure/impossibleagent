@@ -1,4 +1,6 @@
 import type { RankedMemory } from "./RelevanceRanking";
+import { EmbeddingManager } from "./EmbeddingManager";
+import type { SimilaritySearchOptions } from "./EmbeddingManager";
 
 /**
  * Interface for a memory object
@@ -10,6 +12,7 @@ export interface Memory {
   source?: string;
   context?: string;
   metadata?: Record<string, any>;
+  embedding_id?: string; // Reference to the embedding in Vectorize
 }
 
 /**
@@ -19,6 +22,7 @@ export interface MemoryStorageOptions {
   source?: string;
   context?: string;
   metadata?: Record<string, any>;
+  importance?: number;
 }
 
 /**
@@ -62,7 +66,8 @@ export class MemoryManager {
           importance INTEGER DEFAULT 5,
           context TEXT,
           source TEXT,
-          metadata TEXT
+          metadata TEXT,
+          embedding_id TEXT
         )
       `;
 
@@ -78,6 +83,20 @@ export class MemoryManager {
         // We'll continue without the index if it fails
       }
       
+      // Add additional indexes for episodic memories
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_content ON episodic_memories(content)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_importance ON episodic_memories(importance)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_timestamp_importance ON episodic_memories(timestamp, importance)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_context_timestamp ON episodic_memories(context, timestamp)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_source_timestamp ON episodic_memories(source, timestamp)`;
+      
+      // Add recommended indexes from sql-index-recommendations.md
+      // Memory system indexes for timestamp, importance, and context-based queries
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_timestamp_context_importance ON episodic_memories(timestamp, context, importance)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_context_importance ON episodic_memories(context, importance)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_source_importance ON episodic_memories(source, importance)`;
+      await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_episodic_content_timestamp ON episodic_memories(content, timestamp)`;
+      
       console.log("Memory tables initialized successfully");
     } catch (error) {
       console.error("Failed to initialize memory tables:", error);
@@ -91,18 +110,39 @@ export class MemoryManager {
   async storeMemory(
     content: string,
     options: MemoryStorageOptions = {}
-  ): Promise<{ id: string; timestamp: number }> {
+  ): Promise<{ id: string; timestamp: number; embedding_id?: string }> {
     await this.ensureTablesExist();
     
     const id = crypto.randomUUID();
     const timestamp = Date.now();
-    const importance = 5; // Default importance
+    const importance = options.importance || 5; // Default importance
+    let embedding_id: string | undefined;
+    
+    // Generate embedding if embedding manager is available
+    if (this.embeddingManager) {
+      try {
+        // Create embedding in Vectorize
+        embedding_id = await this.embeddingManager.createEmbedding(content, {
+          metadata: {
+            memory_id: id,
+            timestamp,
+            context: options.context,
+            source: options.source,
+            importance
+          }
+        });
+        console.log(`Created embedding for memory: ${id}, embedding_id: ${embedding_id}`);
+      } catch (error) {
+        console.error("Failed to create embedding for memory:", error);
+        // Continue without embedding if it fails
+      }
+    }
     
     try {
-      // Try to store the memory with the source column
+      // Try to store the memory with the source column and embedding_id
       await this.agent.sql`
         INSERT INTO episodic_memories (
-          id, timestamp, content, importance, context, source, metadata
+          id, timestamp, content, importance, context, source, metadata, embedding_id
         ) VALUES (
           ${id}, 
           ${timestamp}, 
@@ -110,13 +150,16 @@ export class MemoryManager {
           ${importance}, 
           ${options.context || null}, 
           ${options.source || null}, 
-          ${options.metadata ? JSON.stringify(options.metadata) : null}
+          ${options.metadata ? JSON.stringify(options.metadata) : null},
+          ${embedding_id || null}
         )
       `;
     } catch (error: any) {
-      // If there's an error with the source column, try without it
-      if (error && error.message && typeof error.message === 'string' && error.message.includes('no column named source')) {
-        console.warn("Source column not found, inserting without source field");
+      // If there's an error with the columns, try a more basic insert
+      if (error && error.message && typeof error.message === 'string' && 
+          (error.message.includes('no column named source') || 
+           error.message.includes('no column named embedding_id'))) {
+        console.warn("Column not found, inserting with basic fields");
         await this.agent.sql`
           INSERT INTO episodic_memories (
             id, timestamp, content, importance, context, metadata
@@ -137,11 +180,12 @@ export class MemoryManager {
     
     console.log(`Stored memory: ${id}`);
     
-    return { id, timestamp };
+    return { id, timestamp, embedding_id };
   }
 
   /**
    * Retrieve memories based on a query and options
+   * Uses keyword search with SQL LIKE operator
    */
   async retrieveMemories(
     query: string,
@@ -158,52 +202,108 @@ export class MemoryManager {
     } = options;
     
     // Use the SQL tagged template literal directly with parameters
-    // This is the recommended way to use the Cloudflare Agents SDK's SQL capabilities
     let results;
     
     try {
-      // Build the query parts for SQL tagged template literal
-      let conditions = [];
-      let values = [];
+      // Following the recommended SQL tagged template literals pattern
+      // Use separate queries for different combinations of conditions
+      const hasQuery = query && query.trim() !== '';
+      const likePattern = hasQuery ? `%${query.replace(/'/g, "''")}%` : '';
       
-      // Add WHERE conditions if needed
-      if (startTime !== undefined) {
-        conditions.push(`timestamp >= ${startTime}`);
-      }
-
-      if (endTime !== undefined) {
-        conditions.push(`timestamp <= ${endTime}`);
-      }
-
-      if (source !== undefined) {
-        conditions.push(`source = ${source}`);
-      }
-
-      if (context !== undefined) {
-        conditions.push(`context = ${context}`);
-      }
-
-      if (query && query.trim() !== '') {
-        // For LIKE queries, we need to construct the pattern with % wildcards
-        const likePattern = `%${query.replace(/'/g, "''")}%`;
-        conditions.push(`content LIKE '%' || ${likePattern} || '%'`);
-      }
-      
-      // Construct the SQL query using tagged template literals
-      // This is the correct way to use the Cloudflare Agents SDK SQL functionality
-      if (conditions.length > 0) {
-        // Use the SQL tagged template literal with conditions
+      // Handle different combinations of filters using separate queries
+      // This follows the recommended pattern from sql-query-patterns.md
+      if (startTime !== undefined && endTime !== undefined && source !== undefined && context !== undefined) {
+        // All filters
         results = await this.agent.sql`
-          SELECT id, timestamp, content, context, source, metadata
+          SELECT id, timestamp, content, context, source, metadata, importance
           FROM episodic_memories
-          WHERE ${conditions.join(' AND ')}
+          WHERE timestamp >= ${startTime}
+            AND timestamp <= ${endTime}
+            AND source = ${source}
+            AND context = ${context}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY context, timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (startTime !== undefined && endTime !== undefined && source !== undefined) {
+        // Time range and source
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE timestamp >= ${startTime}
+            AND timestamp <= ${endTime}
+            AND source = ${source}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY source, timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (startTime !== undefined && endTime !== undefined && context !== undefined) {
+        // Time range and context
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE timestamp >= ${startTime}
+            AND timestamp <= ${endTime}
+            AND context = ${context}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY context, timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (startTime !== undefined && endTime !== undefined) {
+        // Time range only
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE timestamp >= ${startTime}
+            AND timestamp <= ${endTime}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (source !== undefined && context !== undefined) {
+        // Source and context
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE source = ${source}
+            AND context = ${context}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (source !== undefined) {
+        // Source only
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE source = ${source}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (context !== undefined) {
+        // Context only
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE context = ${context}
+            ${hasQuery ? this.agent.sql`AND content LIKE ${likePattern}` : this.agent.sql``}
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+      } else if (hasQuery) {
+        // Query only
+        results = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE content LIKE ${likePattern}
           ORDER BY timestamp DESC
           LIMIT ${limit}
         `;
       } else {
-        // No conditions, just get all memories with limit
+        // No filters, just return recent memories
         results = await this.agent.sql`
-          SELECT id, timestamp, content, context, source, metadata
+          SELECT id, timestamp, content, context, source, metadata, importance
           FROM episodic_memories
           ORDER BY timestamp DESC
           LIMIT ${limit}
@@ -227,18 +327,84 @@ export class MemoryManager {
   }
 
   /**
+   * Retrieve memories based on semantic similarity to a query
+   * Uses vector embeddings and Vectorize for semantic search
+   */
+  async retrieveMemoriesBySimilarity(
+    query: string,
+    options: SimilaritySearchOptions = {}
+  ): Promise<Memory[]> {
+    await this.ensureTablesExist();
+    
+    if (!this.embeddingManager) {
+      console.warn("EmbeddingManager not available, falling back to keyword search");
+      return this.retrieveMemories(query, options);
+    }
+    
+    try {
+      // Perform similarity search using the embedding manager
+      const searchResults = await this.embeddingManager.searchSimilarEmbeddings(query, options);
+      
+      if (!searchResults || searchResults.length === 0) {
+        return [];
+      }
+      
+      // Extract memory IDs from the metadata
+      const memoryIds = searchResults.map((result: { metadata?: { memory_id?: string } }) => 
+        result.metadata?.memory_id as string
+      ).filter(Boolean);
+      
+      if (memoryIds.length === 0) {
+        return [];
+      }
+      
+      // Fetch the actual memories from the database
+      const memories: Memory[] = [];
+      for (const memoryId of memoryIds) {
+        const memory = await this.getMemory(memoryId);
+        if (memory) {
+          memories.push(memory);
+        }
+      }
+      
+      return memories;
+    } catch (error) {
+      console.error("Error performing semantic search:", error);
+      // Fall back to keyword search on error
+      return this.retrieveMemories(query, options);
+    }
+  }
+
+  /**
    * Get a memory by ID
    */
   async getMemory(id: string): Promise<Memory | null> {
     await this.ensureTablesExist();
     
-    const result = await this.agent.sql`
-      SELECT id, timestamp, content, context, source, metadata
-      FROM episodic_memories
-      WHERE id = ${id}
-    `;
+    let result;
+    try {
+      // Try to get the memory with embedding_id field
+      result = await this.agent.sql`
+        SELECT id, timestamp, content, context, source, metadata, embedding_id, importance
+        FROM episodic_memories
+        WHERE id = ${id}
+      `;
+    } catch (error: any) {
+      // If there's an error with the embedding_id column, try without it
+      if (error && error.message && typeof error.message === 'string' && 
+          error.message.includes('no column named embedding_id')) {
+        result = await this.agent.sql`
+          SELECT id, timestamp, content, context, source, metadata, importance
+          FROM episodic_memories
+          WHERE id = ${id}
+        `;
+      } else {
+        // If it's a different error, rethrow it
+        throw error;
+      }
+    }
     
-    if (result.length === 0) {
+    if (!result || result.length === 0) {
       return null;
     }
     
@@ -249,7 +415,8 @@ export class MemoryManager {
       timestamp: row.timestamp,
       source: row.source,
       context: row.context,
-      metadata: row.metadata ? JSON.parse(row.metadata) : undefined
+      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+      embedding_id: row.embedding_id
     };
   }
 
@@ -269,6 +436,42 @@ export class MemoryManager {
     }
     
     try {
+      // If content is being updated and we have an embedding manager, update the embedding
+      if (updates.content !== undefined && this.embeddingManager && memory.embedding_id) {
+        try {
+          // Update the embedding in Vectorize
+          await this.embeddingManager.updateEmbedding(memory.embedding_id, updates.content);
+          console.log(`Updated embedding for memory: ${id}, embedding_id: ${memory.embedding_id}`);
+        } catch (error) {
+          console.error("Failed to update embedding for memory:", error);
+          // Continue with the update even if embedding update fails
+        }
+      } else if (updates.content !== undefined && this.embeddingManager && !memory.embedding_id) {
+        // If content is updated but no embedding exists, create a new one
+        try {
+          const embedding_id = await this.embeddingManager.createEmbedding(updates.content, {
+            metadata: {
+              memory_id: id,
+              timestamp: memory.timestamp,
+              context: memory.context,
+              source: memory.source
+            }
+          });
+          
+          // Update the embedding_id in the database
+          await this.agent.sql`
+            UPDATE episodic_memories 
+            SET embedding_id = ${embedding_id}
+            WHERE id = ${id}
+          `;
+          
+          console.log(`Created new embedding for updated memory: ${id}, embedding_id: ${embedding_id}`);
+        } catch (error) {
+          console.error("Failed to create embedding for updated memory:", error);
+          // Continue with the update even if embedding creation fails
+        }
+      }
+      
       // Use SQL tagged template literals for each field that needs updating
       if (updates.content !== undefined) {
         await this.agent.sql`
@@ -310,12 +513,58 @@ export class MemoryManager {
           WHERE id = ${id}
         `;
       }
+      
+      if (updates.embedding_id !== undefined) {
+        await this.agent.sql`
+          UPDATE episodic_memories 
+          SET embedding_id = ${updates.embedding_id}
+          WHERE id = ${id}
+        `;
+      }
     } catch (error) {
       console.error("Error updating memory:", error);
       return false;
     }
     
     return true;
+  }
+
+  /**
+   * Retrieve the most relevant memories using both keyword and semantic search
+   * This combines the results of both search methods for better recall
+   */
+  async retrieveRelevantMemories(
+    query: string,
+    options: MemoryRetrievalOptions & SimilaritySearchOptions = {}
+  ): Promise<Memory[]> {
+    await this.ensureTablesExist();
+    
+    // Run both search methods in parallel
+    const [keywordResults, semanticResults] = await Promise.all([
+      this.retrieveMemories(query, options),
+      this.embeddingManager ? this.retrieveMemoriesBySimilarity(query, options) : Promise.resolve([])
+    ]);
+    
+    // Combine results, removing duplicates
+    const memoryMap = new Map<string, Memory>();
+    
+    // Add keyword results first
+    for (const memory of keywordResults) {
+      memoryMap.set(memory.id, memory);
+    }
+    
+    // Add semantic results, which might override some keyword results
+    for (const memory of semanticResults) {
+      memoryMap.set(memory.id, memory);
+    }
+    
+    // Convert back to array and sort by timestamp (most recent first)
+    const combinedResults = Array.from(memoryMap.values());
+    combinedResults.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Limit the number of results if specified
+    const limit = options.limit || 50;
+    return combinedResults.slice(0, limit);
   }
 
   /**
@@ -330,7 +579,19 @@ export class MemoryManager {
       return false;
     }
     
-    // Delete the memory
+    // If the memory has an embedding_id and we have an embedding manager, delete the embedding
+    if (memory.embedding_id && this.embeddingManager) {
+      try {
+        // Delete the embedding from Vectorize
+        await this.embeddingManager.deleteEmbedding(memory.embedding_id);
+        console.log(`Deleted embedding for memory: ${id}, embedding_id: ${memory.embedding_id}`);
+      } catch (error) {
+        console.error("Failed to delete embedding for memory:", error);
+        // Continue with the memory deletion even if embedding deletion fails
+      }
+    }
+    
+    // Delete the memory from the database
     await this.agent.sql`
       DELETE FROM episodic_memories
       WHERE id = ${id}

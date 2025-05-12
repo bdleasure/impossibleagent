@@ -1,0 +1,47 @@
+{
+    "name":  "impossible-agent",
+    "version":  "1.0.0",
+    "description":  "",
+    "type":  "module",
+    "private":  true,
+    "scripts":  {
+                    "start":  "wrangler dev",
+                    "deploy":  "wrangler deploy",
+                    "test":  "vitest",
+                    "types":  "wrangler types",
+                    "format":  "prettier --write .",
+                    "check":  "prettier . --check \u0026\u0026 biome lint \u0026\u0026 tsc",
+                    "save":  "powershell -ExecutionPolicy Bypass -File .\\git-save.ps1",
+                    "fix-push":  "powershell -ExecutionPolicy Bypass -File .\\git-save.ps1 --fix-blocked-push"
+                },
+    "keywords":  [
+                     "cloudflare",
+                     "ai",
+                     "agents"
+                 ],
+    "author":  "",
+    "license":  "MIT",
+    "devDependencies":  {
+                            "@biomejs/biome":  "^1.9.4",
+                            "@cloudflare/vite-plugin":  "1.1.0",
+                            "@cloudflare/vitest-pool-workers":  "^0.8.24",
+                            "@cloudflare/workers-types":  "^4.20250507.0",
+                            "@types/node":  "^22.15.3",
+                            "prettier":  "^3.5.3",
+                            "typescript":  "^5.8.3",
+                            "vite":  "^6.3.5",
+                            "vitest":  "3.1.2",
+                            "wrangler":  "^4.14.3"
+                        },
+    "dependencies":  {
+                         "@ai-sdk/openai":  "^1.3.21",
+                         "@ai-sdk/react":  "^1.2.11",
+                         "@ai-sdk/ui-utils":  "^1.2.10",
+                         "@types/d3":  "^7.4.3",
+                         "@types/marked":  "^6.0.0",
+                         "@types/three":  "^0.176.0",
+                         "agents":  "^0.0.77",
+                         "ai":  "^4.3.13",
+                         "zod":  "^3.24.4"
+                     }
+}

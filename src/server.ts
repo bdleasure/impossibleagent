@@ -3,6 +3,7 @@ import { unstable_getSchedulePrompt } from "agents/schedule";
 import { openai } from "@ai-sdk/openai";
 import { tools, executions } from "./tools";
 import { PersonalAgent } from "./agents/PersonalAgent";
+import { McpPersonalAgent } from "./agents/McpPersonalAgent";
 // import { env } from "cloudflare:workers";
 
 /**
@@ -13,6 +14,13 @@ interface Env {
   OPENAI_API_KEY?: string;
   // Assets binding for serving static files and SPA
   ASSETS: Fetcher;
+  // AI binding for Workers AI
+  AI: any;
+  // Vectorize binding for vector database
+  VECTOR_DB: any;
+  // MCP server configuration
+  MCP_SERVER_NAME: string;
+  MCP_SERVER_VERSION: string;
 }
 
 const model = openai("gpt-4o-2024-11-20");
@@ -23,7 +31,7 @@ const model = openai("gpt-4o-2024-11-20");
 // });
 
 /**
- * Register our PersonalAgent as the main agent for the application
+ * Register our PersonalAgent for the application
  */
 export const { Chat } = PersonalAgent.register({
   model,
@@ -49,8 +57,13 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
   maxSteps: 10,
 });
 
-// Log that the agent is registered
+// Create a reference to the McpPersonalAgent Durable Object
+// This will be used for MCP server functionality
+export const { PersonalAgent: McpAgent } = { PersonalAgent: McpPersonalAgent };
+
+// Log that the agents are registered
 console.log("PersonalAgent registered as 'Chat'");
+console.log("McpPersonalAgent available for MCP server functionality");
 
 /**
  * Worker entry point that routes incoming requests to the appropriate handler
@@ -131,7 +144,8 @@ export default {
     // This handles WebSocket connections and API requests
     try {
       const agentResponse = await routeAgentRequest(request, env, {
-        cors: true // Enable CORS for all agent requests
+        cors: true, // Enable CORS for all agent requests
+        prefix: 'agents' // Use 'agents' as the prefix for agent routes
       });
       
       if (agentResponse) {
@@ -139,6 +153,23 @@ export default {
       }
     } catch (error) {
       console.error(`Error routing agent request: ${error}`);
+    }
+    
+    // Handle MCP server requests
+    if (url.pathname.startsWith('/mcp') || url.pathname.startsWith('/sse')) {
+      try {
+        // Route to MCP server
+        if (url.pathname.startsWith('/sse')) {
+          return McpAgent.serveSSE('/sse').fetch(request, env, ctx);
+        }
+        
+        if (url.pathname.startsWith('/mcp')) {
+          return McpAgent.serve('/mcp').fetch(request, env, ctx);
+        }
+      } catch (error) {
+        console.error(`Error handling MCP request: ${error}`);
+        return new Response(`MCP server error: ${error}`, { status: 500 });
+      }
     }
     
     // Handle OpenAI key check

@@ -70,6 +70,24 @@ export class KnowledgeBase<Env> {
     await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_category ON knowledge_entries(category)`;
     await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_confidence ON knowledge_entries(confidence)`;
     await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_created ON knowledge_entries(created)`;
+    
+    // Add indexes for content search queries
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_content ON knowledge_entries(content)`;
+    
+    // Add composite indexes for common query patterns
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_category_confidence ON knowledge_entries(category, confidence)`;
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_category_updated ON knowledge_entries(category, updated)`;
+    
+    // Add indexes for knowledge embeddings
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_embeddings_knowledge_id ON knowledge_embeddings(knowledge_id)`;
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_embeddings_created_at ON knowledge_embeddings(created_at)`;
+    
+    // Add recommended indexes from sql-index-recommendations.md
+    // Knowledge graph indexes for entity type and relationship queries
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_source_confidence ON knowledge_entries(source, confidence)`;
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_tags ON knowledge_entries(tags)`;
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_content_confidence ON knowledge_entries(content, confidence)`;
+    await this.agent.sql`CREATE INDEX IF NOT EXISTS idx_knowledge_source_category_confidence ON knowledge_entries(source, category, confidence)`;
   }
 
   /**
@@ -126,63 +144,69 @@ export class KnowledgeBase<Env> {
   }): Promise<boolean> {
     const timestamp = Date.now();
     
-    // Build the SET clause dynamically based on provided updates
-    const setClauses = [];
-    const values: any[] = [];
-    
-    if (updates.content !== undefined) {
-      setClauses.push("content = ?");
-      values.push(updates.content);
-    }
-    
-    if (updates.source !== undefined) {
-      setClauses.push("source = ?");
-      values.push(updates.source);
-    }
-    
-    if (updates.category !== undefined) {
-      setClauses.push("category = ?");
-      values.push(updates.category);
-    }
-    
-    if (updates.tags !== undefined) {
-      setClauses.push("tags = ?");
-      values.push(JSON.stringify(updates.tags));
-    }
-    
-    if (updates.confidence !== undefined) {
-      setClauses.push("confidence = ?");
-      values.push(updates.confidence);
-    }
-    
-    if (updates.metadata !== undefined) {
-      setClauses.push("metadata = ?");
-      values.push(JSON.stringify(updates.metadata));
-    }
+    // Update each field separately with individual SQL queries
+    // This is the recommended approach for the Cloudflare Agents SDK
     
     // Always update the 'updated' timestamp
-    setClauses.push("updated = ?");
-    values.push(timestamp);
-    
-    // If no updates were provided, just return true
-    if (setClauses.length === 1) {
-      return true;
-    }
-    
-    // Add the ID as the last value
-    values.push(id);
-    
-    // Execute the update query using template literals
-    // Since we can't use the execute method directly, we'll build a template literal
-    const setClause = setClauses.join(", ");
-    
-    // Build a dynamic SQL query using the agent.sql template tag
-    // This is a workaround since we can't use parameterized queries directly
     await this.agent.sql`
       UPDATE knowledge_entries
-      SET ${setClause}
+      SET updated = ${timestamp}
       WHERE id = ${id}
     `;
+    
+    // Update content if provided
+    if (updates.content !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET content = ${updates.content}
+        WHERE id = ${id}
+      `;
+    }
+    
+    // Update source if provided
+    if (updates.source !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET source = ${updates.source}
+        WHERE id = ${id}
+      `;
+    }
+    
+    // Update category if provided
+    if (updates.category !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET category = ${updates.category}
+        WHERE id = ${id}
+      `;
+    }
+    
+    // Update tags if provided
+    if (updates.tags !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET tags = ${JSON.stringify(updates.tags)}
+        WHERE id = ${id}
+      `;
+    }
+    
+    // Update confidence if provided
+    if (updates.confidence !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET confidence = ${updates.confidence}
+        WHERE id = ${id}
+      `;
+    }
+    
+    // Update metadata if provided
+    if (updates.metadata !== undefined) {
+      await this.agent.sql`
+        UPDATE knowledge_entries
+        SET metadata = ${JSON.stringify(updates.metadata)}
+        WHERE id = ${id}
+      `;
+    }
     
     // In a real implementation, we would update embeddings if content changed
     // if (updates.content) {
@@ -286,50 +310,91 @@ export class KnowledgeBase<Env> {
       };
     }
     
-    // Build a query that searches for any of the keywords
-    const entries = [];
-    const relevanceScores: Record<string, number> = {};
+    // Use the recommended SQL tagged template literals pattern
+    // Instead of building a dynamic query string
+    let results: any[] = [];
+    
+    // For each keyword, perform a separate query and combine results
+    // This follows the recommended pattern from sql-query-patterns.md
+    const allResults: any[] = [];
     
     for (const keyword of keywords) {
-      const results = await this.agent.sql`
-        SELECT * FROM knowledge_entries
-        WHERE 
-          content LIKE ${'%' + keyword + '%'} OR
-          tags LIKE ${'%' + keyword + '%'}
+      const likePattern = `%${keyword}%`;
+      
+      // Query for content matches
+      const contentResults = await this.agent.sql`
+        SELECT id, content, source, category, tags, confidence, created, updated, metadata
+        FROM knowledge_entries
+        WHERE content LIKE ${likePattern}
         ORDER BY confidence DESC
         LIMIT ${limit}
       `;
       
-      for (const entry of results) {
-        const id = entry.id as string;
-        
-        // Calculate a simple relevance score based on keyword frequency
-        const content = (entry.content as string).toLowerCase();
-        const keywordCount = content.split(keyword).length - 1;
-        
-        // If we've already seen this entry, update its score
-        if (relevanceScores[id]) {
-          relevanceScores[id] += keywordCount;
-        } else {
-          // Otherwise, add it to our results
-          entries.push({
-            id: id,
-            content: entry.content as string,
-            source: entry.source as string,
-            category: entry.category as string,
-            tags: JSON.parse(entry.tags as string),
-            confidence: entry.confidence as number,
-            created: entry.created as number,
-            updated: entry.updated as number,
-            metadata: entry.metadata ? JSON.parse(entry.metadata as string) : undefined
-          });
-          
-          relevanceScores[id] = keywordCount;
-        }
-      }
+      // Query for tag matches
+      const tagResults = await this.agent.sql`
+        SELECT id, content, source, category, tags, confidence, created, updated, metadata
+        FROM knowledge_entries
+        WHERE tags LIKE ${likePattern}
+        ORDER BY confidence DESC
+        LIMIT ${limit}
+      `;
+      
+      // Add results to the combined array
+      allResults.push(...contentResults, ...tagResults);
     }
     
-    // Sort entries by relevance score
+    // Remove duplicates by ID
+    const uniqueIds = new Set<string>();
+    results = allResults.filter(entry => {
+      if (uniqueIds.has(entry.id)) {
+        return false;
+      }
+      uniqueIds.add(entry.id);
+      return true;
+    });
+    
+    // Sort by confidence and limit results
+    results.sort((a, b) => b.confidence - a.confidence);
+    results = results.slice(0, limit);
+    
+    if (results.length === 0) {
+      return {
+        entries: [],
+        totalCount: 0
+      };
+    }
+    
+    // Process results and calculate relevance scores
+    const entries: KnowledgeEntry[] = [];
+    const relevanceScores: Record<string, number> = {};
+    
+    for (const entry of results) {
+      const id = entry.id as string;
+      const content = (entry.content as string).toLowerCase();
+      let totalScore = 0;
+      
+      // Calculate relevance score based on keyword frequency
+      for (const keyword of keywords) {
+        const keywordCount = content.split(keyword).length - 1;
+        totalScore += keywordCount;
+      }
+      
+      relevanceScores[id] = totalScore;
+      
+      entries.push({
+        id: id,
+        content: entry.content as string,
+        source: entry.source as string,
+        category: entry.category as string,
+        tags: JSON.parse(entry.tags as string),
+        confidence: entry.confidence as number,
+        created: entry.created as number,
+        updated: entry.updated as number,
+        metadata: entry.metadata ? JSON.parse(entry.metadata as string) : undefined
+      });
+    }
+    
+    // Sort entries by relevance score and confidence
     entries.sort((a, b) => {
       const scoreA = relevanceScores[a.id] || 0;
       const scoreB = relevanceScores[b.id] || 0;

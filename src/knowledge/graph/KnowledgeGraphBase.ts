@@ -5,12 +5,13 @@ import { EntityManager } from "./EntityManager";
 import { RelationshipManager } from "./RelationshipManager";
 import { ContradictionManager } from "./ContradictionManager";
 import { QueryManager } from "./QueryManager";
+import type { VectorizeEnv } from "./EntityEmbeddingManager";
 
 /**
  * KnowledgeGraph implements a graph-based representation of knowledge
  * with entities, relationships, and contradiction detection
  */
-export class KnowledgeGraph<Env> {
+export class KnowledgeGraph<Env extends VectorizeEnv> {
   private entityManager: EntityManager<Env>;
   private relationshipManager: RelationshipManager<Env>;
   private contradictionManager: ContradictionManager<Env>;
@@ -44,6 +45,8 @@ export class KnowledgeGraph<Env> {
    * Initialize the knowledge graph with necessary database tables
    */
   async initialize(): Promise<void> {
+    // Initialize the entity manager (which will initialize the embedding manager)
+    await this.entityManager.initialize();
     // Create entities table
     await this.agent.sql`
       CREATE TABLE IF NOT EXISTS knowledge_entities (

@@ -1,14 +1,9 @@
 // Export agent implementations
 export * from './agents/PersonalAgent';
+export * from './agents/McpPersonalAgent';
 
 // Export memory system
 export * from './memory/MemoryManager';
-
-// Export tool adapters
-export * from './tools/BaseMCPAdapter';
-export * from './tools/CalendarAdapter';
-export * from './tools/WeatherAdapter';
-export * from './tools/EmailAdapter';
 
 // Export knowledge system
 export * from './knowledge/KnowledgeBase';

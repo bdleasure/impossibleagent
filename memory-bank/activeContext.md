@@ -2,104 +2,360 @@
 
 ## Current Work Focus
 
-The current focus of the ImpossibleAgent project is on implementing **Advanced UI Components** with an emphasis on emotional engagement features for the Reflective Planner target avatar. We have successfully completed the implementation of the **Memory Garden Components** as of May 9, 2025, which includes both 3D and 2D (Lite) versions, a responsive container, and a comprehensive showcase component.
+The current focus of the ImpossibleAgent project is on optimizing and enhancing the backend implementation based on Cloudflare Agents SDK best practices. After successfully completing the Memory and Knowledge Graph Optimization on May 11, 2025, we're now moving on to implementing WebSocket Hibernation for improved resource efficiency.
 
-The Memory Garden is a key emotional engagement feature that visualizes memories and tasks in an organic, garden-like environment. The 3D version uses Three.js for immersive visualization, while the Lite version uses SVG and Canvas for optimal performance on mobile devices. The responsive container automatically selects the appropriate version based on device capabilities, ensuring a consistent experience across different platforms.
+Our current primary focus areas are:
 
-Prior to this, we completed the **Tool Usage Tracking** system on May 8, 2025, which provides comprehensive analytics and tracking for tool usage patterns, enabling improved tool suggestions and user experience.
+1. ✅ **MCP Implementation Upgrade**: Successfully completed on May 11, 2025. We've replaced our mock MCP implementation with the official Cloudflare Agents SDK's MCP capabilities by extending the `McpAgent` class instead of `AIChatAgent`. We've implemented additional MCP tools, configured wrangler.jsonc to support MCP server functionality, and implemented proper error handling for MCP operations.
 
-The project has also made significant progress on the **Memory System**, **Knowledge Graph**, **Cross-Device Session Management**, **Security System**, and **Offline Capabilities** components, which form the foundation of the agent's capabilities. These systems are fully implemented and integrated with the core agent functionality, providing a robust foundation for future enhancements.
+2. ✅ **SQL Query Pattern Optimization**: Completed on May 11, 2025. We've completed the audit phase, created comprehensive documentation, and implemented all recommended indexes:
+   - ✅ Verified that all key files are already using the correct SQL tagged template literals pattern:
+     - `KnowledgeBase.ts` is correctly using SQL tagged template literals
+     - `MemoryManager.ts` is correctly using SQL tagged template literals
+     - `QueryManager.ts` is correctly using SQL tagged template literals
+     - `McpPersonalAgent.ts` is correctly using SQL tagged template literals
+     - `mcp-tools.ts` is correctly using SQL tagged template literals
+   - ✅ Key findings from the audit:
+     - No instances of the prepare/bind pattern were found in the examined files
+     - All parameter interpolation is being done correctly within template literals
+     - Dynamic condition building is generally following the correct approach with separate queries for different combinations of conditions
+   - ✅ Created comprehensive documentation with detailed examples of correct patterns for SELECT, INSERT, UPDATE, and DELETE operations
+   - ✅ Documented guidelines for handling dynamic queries with multiple conditions
+   - ✅ Added best practices for working with arrays in queries
+   - ✅ Included error handling patterns for database operations
+   - ✅ Documented performance considerations including indexing and result limiting
+   - ✅ Verified dynamic condition building in QueryManager.ts is using the correct approach with separate SQL queries for different combinations of conditions
+   - ✅ Created comprehensive SQL index recommendations in `memory-bank/sql-index-recommendations.md` with:
+     - Analysis of current indexes in the codebase
+     - Recommended additional indexes for knowledge graph, memory system, tool usage tracking, and scheduled tasks
+     - Implementation plan with code examples for each component
+     - Performance considerations and best practices
+     - Monitoring and optimization recommendations
+   - ✅ Implemented all recommended indexes (Completed May 11, 2025):
+     - ✅ Implemented knowledge graph indexes in QueryManager.ts:
+       - Added indexes for entity name and type queries
+       - Added indexes for relationship source and target entity queries
+       - Added indexes for relationship type queries
+       - Added composite indexes for source/type and target/type combinations
+     - ✅ Implemented memory system indexes in MemoryManager.ts:
+       - Added indexes for content, importance, and timestamp-based queries
+       - Added composite indexes for context/timestamp, source/timestamp, and timestamp/importance combinations
+       - Added additional recommended indexes for timestamp/context/importance, context/importance, source/importance, and content/timestamp
+     - ✅ Implemented tool usage tracking indexes in McpPersonalAgent.ts:
+       - Added indexes for user_id and success-based queries
+       - Added composite indexes for tool_id/timestamp and user_id/tool_id combinations
+     - ✅ Implemented scheduled task indexes in McpPersonalAgent.ts:
+       - Added indexes for next_run and name-based queries
+
+3. **Memory and Knowledge Graph Optimization**: 
+   - ✅ Implemented batch processing for memory operations with BatchMemoryManager (Completed May 11, 2025)
+     - Created `BatchMemoryManager` class for efficient batch operations
+     - Implemented bulk insertion for multiple memories
+     - Added batch retrieval for related memories
+     - Optimized transaction handling for batch operations
+     - Added proper error handling with fallback to individual operations
+     - Implemented memory update and deletion in batches
+     - Added embedding generation and management in batches
+   - ✅ Added caching strategies for frequently accessed data with MemoryCache (Completed May 11, 2025)
+     - Implemented `MemoryCache` class for caching frequently accessed memories
+     - Added cache invalidation for updated memories
+     - Implemented tiered caching for different access patterns
+     - Added configurable cache size and expiration policies
+     - Implemented LRU (Least Recently Used) eviction strategy
+     - Added automatic cleanup of expired entries
+     - Implemented cache statistics tracking (hits, misses, hit ratio)
+   - ✅ Implemented pagination for large result sets with PaginatedMemoryRetrieval (Completed May 11, 2025)
+     - Created `PaginatedMemoryRetrieval` class for efficient pagination
+     - Implemented cursor-based pagination for memory retrieval
+     - Added sorting options for flexible querying
+     - Optimized query performance for paginated results
+     - Added support for filtering by importance, content, context, and time range
+     - Implemented total count calculation for pagination metadata
+     - Added specialized methods for common retrieval patterns
+   - ✅ Integrated Cloudflare Vectorize for efficient embedding storage and retrieval in the memory system (Completed May 11, 2025)
+     - Implemented `EmbeddingManager` class for generating and managing embeddings with Vectorize
+     - Added methods for storing embeddings in Vectorize with metadata
+     - Implemented vector search for semantic retrieval with filtering options
+     - Added support for updating and deleting embeddings in Vectorize
+     - Implemented batch operations for embedding generation and management
+     - Added proper error handling for Vectorize operations
+     - Configured Vectorize binding in wrangler.jsonc with "agent-memories" index
+   - ✅ Update `KnowledgeGraph` to use Vectorize for semantic entity search (Completed May 11, 2025)
+     - Created `EntityEmbeddingManager` class for generating and managing entity embeddings with Vectorize
+     - Implemented vector-based semantic search for entities with filtering options
+     - Added methods for storing entity embeddings in Vectorize with metadata
+     - Implemented batch operations for entity embedding generation and management
+     - Updated `EntityManager` to use the `EntityEmbeddingManager` for semantic entity search
+     - Updated `QueryManager` to use vector-based semantic search for entity queries
+     - Added proper error handling for Vectorize operations with entity embeddings
+     - Implemented namespace separation to distinguish entity embeddings from memory embeddings
+     - Added support for updating and deleting entity embeddings in Vectorize
+     - Configured proper type definitions for Vectorize environment
+
+4. **WebSocket Hibernation Implementation**: Updating our WebSocket handling to use the Hibernation API for improved resource efficiency.
+
+5. **Workflow Implementation**: Adding support for complex, multi-step operations using Cloudflare Workflows.
+
+These improvements will significantly enhance the performance, scalability, and capabilities of our agent while ensuring we follow Cloudflare's best practices.
+
+Prior to this optimization focus, we completed a comprehensive cleanup of frontend components on May 10, 2025, removing React components, hooks, providers, routes, and frontend dependencies to focus solely on the backend memory system. The project now focuses exclusively on the **Memory System**, **Knowledge Graph**, **Security System**, and **Tool Integration** capabilities, which form the foundation of the agent's functionality.
 
 ## Recent Changes
 
-### Enhanced Chat Interface Implementation with LibreChat/ChatGPT Styling
+### McpPersonalAgent Implementation
 
-The Enhanced Chat Interface has been updated with LibreChat/ChatGPT-inspired styling as of May 10, 2025, providing a modern, clean aesthetic that aligns with industry standards while maintaining our unique memory integration features:
+The McpPersonalAgent class has been implemented as of May 11, 2025, providing a proper MCP implementation using the Cloudflare Agents SDK:
 
-1. **Comprehensive CSS Styling**:
-   - Implemented CSS variables for theming with light and dark mode support
-   - Created consistent design language across all components
-   - Added responsive design for all device sizes
-   - Implemented animations for typing indicators and message transitions
-   - Enhanced visual hierarchy with proper spacing and typography
+1. **Core Implementation**:
+   - Created new `McpPersonalAgent` class extending `McpAgent` from the Cloudflare Agents SDK
+   - Implemented proper SQL schema creation with tagged template literals
+   - Added memory storage and retrieval functionality with proper SQL queries
+   - Implemented chat processing with AI model integration
+   - Added memory extraction from conversations
+   - Implemented user profile and preferences management
+   - Added proper error handling with specialized error classes
+   - Implemented SQL database initialization with table creation
+   - Added proper type definitions for state and environment
 
-2. **Component Enhancements**:
-   - **MessageBubble**: Updated with distinct user/assistant styling and avatar integration
-   - **TypingIndicator**: Added animated dots with assistant avatar for a more engaging experience
-   - **ChatInput**: Redesigned with rounded borders, shadow effects, and improved button placement
-   - **EnhancedChatInterface**: Updated with full-height layout and improved header
+2. **Database Schema Design**:
+   - Created `episodic_memories` table for storing memories with fields for id, timestamp, content, importance, context, source, and metadata
+   - Implemented `entities` table for knowledge graph entities with fields for id, type, name, properties, confidence, created_at, and updated_at
+   - Added `relationships` table for knowledge graph relationships with fields for id, source_id, target_id, type, properties, confidence, and created_at
+   - Created appropriate indexes for common query patterns (timestamp, entity type, relationship source)
+   - Used SQL tagged template literals for all database operations
+   - Implemented proper foreign key constraints between tables
+   - Added schema evolution handling for backward compatibility
 
-3. **Memory Integration Preservation**:
-   - Maintained memory indicators with improved visual styling
-   - Enhanced message importance marking with better visual feedback
-   - Improved feedback mechanisms (like/dislike) with more intuitive styling
+3. **MCP Server Implementation**:
+   - Created an MCP server instance with `new McpServer()` in the agent
+   - Registered tools with `server.tool()` using Zod schemas for parameter validation
+   - Implemented memory management tools (store_memory, retrieve_memories)
+   - Added knowledge graph query tools (query_knowledge, add_entity, add_relationship)
+   - Implemented user profile and preferences management tools (update_profile, get_profile)
+   - Added proper parameter schemas using Zod for type safety and validation
+   - Implemented proper error handling and response formatting for all tools
+   - Added tool descriptions and examples for better usability
+   - Used standardized response format following MCP specifications
+   - Implemented proper parameter validation with descriptive error messages
+   - Added support for optional parameters with default values
 
-4. **App Layout Improvements**:
-   - Added modern header with settings button
-   - Implemented full-height layout for optimal space utilization
-   - Fixed import paths for proper component loading
-   - Ensured cross-browser compatibility and responsive behavior
+4. **State Management**:
+   - Implemented proper state structure with conversations, user profile, and preferences
+   - Added state initialization with default values
+   - Implemented state updates with proper merging
+   - Added state synchronization between server and clients
+   - Used the SQL database for large or complex state data
+   - Implemented proper state typing with TypeScript interfaces
+   - Added state validation to ensure data integrity
+   - Implemented proper error handling for state operations
+   - Used the `this.setState` API for state management
+   - Implemented the `onStateUpdate` method to react to state changes
+   - Added proper state initialization in the `initialState` property
+   - Used proper TypeScript generics for state typing
 
-5. **Implementation Details**:
-   - Used CSS variables for consistent theming across components
-   - Implemented proper responsive design with media queries
-   - Added animations for improved user experience
-   - Ensured accessibility with proper contrast and focus states
-   - Maintained memory integration features while improving visual design
+5. **Memory System Integration**:
+   - Implemented episodic memory storage and retrieval
+   - Added memory extraction from conversations
+   - Implemented memory relevance ranking
+   - Added context-aware memory retrieval for chat
+   - Implemented memory importance scoring
+   - Added memory tagging and categorization
+   - Implemented memory search with multiple filters
+   - Added memory update and deletion capabilities
+   - Implemented proper error handling for memory operations
+   - Used SQL tagged template literals for all memory operations
+   - Added support for semantic search with query parameters
+   - Implemented time-based filtering with start and end dates
+   - Added importance-based filtering with minimum threshold
+   - Implemented context-based filtering for specific memory contexts
+   - Added pagination support with limit parameter
+   - Used proper SQL query building for dynamic conditions
 
-### SQL Query Fix in Memory System
+6. **AI Model Integration**:
+   - Implemented OpenAI integration for chat processing
+   - Added system prompt generation with user profile and relevant memories
+   - Implemented proper error handling for AI model calls
+   - Added context management for conversation history
+   - Implemented streaming responses for better user experience
+   - Added proper handling of model errors and rate limits
+   - Implemented fallback mechanisms for model failures
+   - Added response formatting and post-processing
+   - Used the OpenAI SDK for model integration
+   - Implemented proper API key handling with environment variables
+   - Added support for different models with configuration
+   - Implemented proper message formatting for chat completions
+   - Added support for system prompts with dynamic content
+   - Implemented proper error handling for API calls
+   - Added logging for model responses and errors
 
-The SQL query implementation in the MemoryManager.ts file has been fixed as of May 9, 2025, resolving a critical issue that was causing "near '?': syntax error at offset 0" errors:
+7. **Knowledge Graph Integration**:
+   - Implemented entity and relationship storage
+   - Added knowledge graph querying with filters
+   - Implemented entity and relationship creation and updating
+   - Added knowledge extraction from conversations
+   - Implemented entity type filtering
+   - Added relationship type filtering
+   - Implemented query-based search for entities and relationships
+   - Added limit parameter for pagination
+   - Used SQL tagged template literals for all knowledge graph operations
+   - Implemented proper error handling for knowledge graph operations
+   - Added support for confidence scoring for entities and relationships
+   - Implemented proper JSON handling for properties storage
 
-1. **SQL Query Implementation**:
-   - Fixed incorrect SQL query implementation that was using the prepare/bind pattern
-   - Implemented proper SQL tagged template literals with the Cloudflare Agent SDK's SQL functionality
-   - Replaced `this.agent.prepare(baseQuery).bind(...params).all()` with direct SQL tagged template literals
-   - Implemented proper condition building for dynamic SQL queries that works with the Cloudflare Agent SDK
-   - Verified fix by testing the chat functionality with memory retrieval operations
+8. **Additional MCP Tools Implementation**:
+   - Implemented `extract_knowledge` tool for extracting entities and relationships from text
+   - Added `browse_web` tool for web browsing and content extraction
+   - Implemented `security_assessment` tool for evaluating data security
+   - Added `consolidate_memories` tool for memory organization and summarization
+   - Used proper error handling with `withMCPErrorHandling` utility
+   - Implemented parameter validation with Zod schemas
+   - Added descriptive tool documentation
+   - Used standardized response formatting
+   - Implemented proper integration with agent capabilities
 
-2. **Documentation Updates**:
-   - Added new entry in lessonsLearned.md about SQL query implementation with Cloudflare Agent SDK
-   - Updated systemPatterns.md with a new section on SQL Query Implementation with Cloudflare Agent SDK
-   - Added detailed example code showing correct and incorrect SQL query patterns
-   - Updated progress.md with a new milestone for the SQL query fix
+This implementation represents significant progress on Priority 1: Upgrade MCP Implementation from our improvement plan. The next steps include implementing additional MCP tools for agent capabilities, configuring wrangler.jsonc to support MCP server functionality, and implementing proper error handling for MCP operations.
+
+### Cloudflare Agents Documentation Review and Improvement Plan
+
+A comprehensive review of the Cloudflare Agents documentation has been completed as of May 10, 2025, providing valuable insights and best practices for optimizing our implementation. The findings have been documented in [cloudflareAgentImprovements.md](./cloudflareAgentImprovements.md) with a prioritized list of improvements and implementation timeline:
+
+1. **MCP Implementation with McpAgent**:
+   - Discovered that we should be extending the `McpAgent` class instead of `AIChatAgent` for proper MCP capabilities
+   - Identified the need to support both SSE and Streamable HTTP transport methods for MCP server functionality
+   - Learned about proper authentication and authorization for MCP tools
+   - Found examples of tool execution patterns with human-in-the-loop confirmation
+
+2. **SQL Query Patterns**:
+   - Identified that we should be using SQL tagged template literals for all database operations
+   - Learned that the prepare/bind pattern causes syntax errors with the Cloudflare Agent SDK
+   - Found examples of proper parameter interpolation within template literals
+   - Discovered best practices for dynamic condition building in SQL queries
+
+3. **WebSocket Hibernation API**:
+   - Learned about the WebSocket Hibernation API for efficient resource usage
+   - Discovered that we should use `this.ctx.acceptWebSocket(server)` instead of `server.accept()`
+   - Found examples of proper `webSocketMessage`, `webSocketClose`, and `webSocketError` handlers
+   - Identified the benefits of hibernation for scalability and resource efficiency
+
+4. **Workflows for Complex Operations**:
+   - Discovered Cloudflare Workflows for complex, multi-step operations
+   - Learned about extending the `WorkflowEntrypoint` class for workflow definitions
+   - Found examples of step-based execution with proper error handling
+   - Identified the benefits of workflows for asynchronous processing and reliability
+
+5. **Vectorize Integration**:
+   - Learned about Cloudflare Vectorize for efficient embedding storage and retrieval
+   - Discovered how to integrate Vectorize with our memory and knowledge systems
+   - Found examples of vector search for semantic retrieval
+   - Identified the performance benefits of Vectorize for our embedding-based memory system
+
+6. **State Management Best Practices**:
+   - Learned about the `this.setState` API for state management
+   - Discovered how to use the SQL database for large or complex state data
+   - Found examples of state synchronization between server and clients
+   - Identified best practices for state structure and updates
+
+7. **Tool Integration Patterns**:
+   - Discovered the Cloudflare Agents SDK's tool system for standardized tool integration
+   - Learned about tool execution patterns with human-in-the-loop confirmation
+   - Found examples of tool discovery and registration
+   - Identified best practices for context-aware tool suggestions
+
+8. **Testing and Error Handling**:
+   - Learned about comprehensive testing strategies for Cloudflare Agents
+   - Discovered best practices for error handling and logging
+   - Found examples of retry mechanisms for transient failures
+   - Identified the importance of telemetry for error tracking and analysis
+
+These findings have been incorporated into our implementation plan and will guide our development efforts over the coming months.
+
+### Frontend Cleanup Implementation
+
+The Frontend Cleanup has been implemented as of May 10, 2025, removing frontend components and dependencies to focus solely on the backend memory system:
+
+1. **Removed Frontend Files and Directories**:
+   - React components in `src/components/` (except for Chat.tsx and Chat.css)
+   - React hooks in `src/hooks/`
+   - React providers in `src/providers/`
+   - React routes in `src/routes/`
+   - Frontend styling files
+   - Frontend utility functions
+
+2. **Removed Frontend Dependencies**:
+   - React and React-related (react, react-dom, react-router-dom, react-markdown, @ai-sdk/react)
+   - UI Components and styling (@phosphor-icons/react, @radix-ui/react-*, class-variance-authority, clsx, tailwind-merge)
+   - 3D and visualization (@react-three/drei, @react-three/fiber, three, d3, @types/d3, @types/three)
+   - Markdown processing (marked, remark-gfm, @types/marked)
+   - Frontend development tools (@tailwindcss/vite, @types/react, @types/react-dom, @vitejs/plugin-react, tailwindcss)
+
+3. **Preserved Backend Files**:
+   - `src/server.ts` - Core backend file with the worker entry point
+   - `src/agents/PersonalAgent.ts` - Custom agent implementation with memory system
+   - `src/tools.ts` - Tool definitions for the agent
+   - `src/utils.ts` - Utility functions for the backend
+   - `src/shared.ts` - Shared constants
+   - Memory system files in `src/memory/`
+   - Knowledge system files in `src/knowledge/`
+   - Security system files in `src/security/`
+   - Tool system files in `src/tools/`
+
+4. **Preserved Backend Dependencies**:
+   - `agents` - Cloudflare Agents SDK
+   - `ai` - AI SDK for agent functionality
+   - `@ai-sdk/openai` - OpenAI integration
+   - `@ai-sdk/ui-utils` - Utility functions for AI
+   - `zod` - Schema validation
+
+5. **Created Cleanup Scripts**:
+   - `cleanup-frontend.ps1` - Removes frontend files and directories
+   - `cleanup-backend.ps1` - Cleans up backend files
+   - `cleanup-remaining-frontend.ps1` - Removes additional frontend files
+   - `cleanup-packages.ps1` - Removes frontend dependencies from package.json
+   - `cleanup-remaining-packages.ps1` - Removes remaining frontend dependencies
+   - `cleanup-node-modules.ps1` - Removes node_modules directory and reinstalls dependencies
+   - `cleanup-all.ps1` - Comprehensive script that performs all cleanup steps in one go
+
+6. **Added Build Script**:
+   - Added `build` script to package.json: `wrangler deploy --dry-run --outdir=dist`
+   - Updated wrangler.jsonc to remove assets binding
+
+7. **Documentation**:
+   - Created `FRONTEND-CLEANUP-README.md` with detailed documentation
+   - Created `memory-bank/frontend-cleanup.md` to document the cleanup process
+   - Updated `activeContext.md` to reflect the new focus
+
+### SQL Query Pattern Documentation
+
+We've created comprehensive documentation for SQL query patterns in the Cloudflare Agents SDK as of May 11, 2025:
+
+1. **SQL Query Pattern Documentation**:
+   - Created `memory-bank/sql-query-patterns.md` with detailed documentation
+   - Documented the correct pattern using SQL tagged template literals
+   - Provided examples for SELECT, INSERT, UPDATE, and DELETE operations
+   - Included guidelines for handling dynamic queries with multiple conditions
+   - Added best practices for working with arrays in queries
+   - Documented error handling patterns for database operations
+   - Included performance considerations such as indexing and result limiting
+   - Added examples of table initialization and schema evolution
+
+2. **Audit Findings**:
+   - Completed comprehensive audit of key files in the codebase
+   - Found that all examined files are already using the correct SQL tagged template literals pattern
+   - Verified that `KnowledgeBase.ts`, `MemoryManager.ts`, `QueryManager.ts`, `McpPersonalAgent.ts`, and `mcp-tools.ts` are all using the correct pattern
+   - No instances of the prepare/bind pattern were found in the examined files
+   - All parameter interpolation is being done correctly within template literals
+   - Dynamic condition building is generally following the correct approach with separate queries for different combinations of conditions
 
 3. **Key Learnings**:
    - The Cloudflare Agent SDK requires using SQL tagged template literals directly
    - The prepare/bind pattern causes syntax errors with the SDK's SQL implementation
    - Proper parameter interpolation within template literals is essential for security
-   - Dynamic condition building requires careful string concatenation with proper parameter binding
-
-### Client-Side Routing Implementation
-
-The Client-Side Routing system has been implemented as of May 9, 2025, providing seamless navigation between different components of the ImpossibleAgent UI:
-
-1. **Custom Vite Plugin**:
-   - Created `vite-history-fallback.js` plugin for SPA routing support
-   - Implemented middleware to serve index.html for all routes that don't match static files
-   - Added TypeScript declaration file for proper type checking
-   - Configured plugin to handle API requests separately from client routes
-   - Ensured proper handling of direct route access (e.g., accessing /ritual-moments directly)
-
-2. **React Router Setup**:
-   - Configured `AppRouter` component with `BrowserRouter` for handling all application routes
-   - Implemented route components for Memory Garden, Ritual Moments, and Voice Interaction demos
-   - Added redirect routes for improved user experience (e.g., / redirects to /showcase)
-   - Created fallback route to handle 404 errors
-   - Set up proper navigation between component demos
-
-3. **Component Showcase Integration**:
-   - Made showcase the default landing page for the application
-   - Implemented card-based navigation to different component demos
-   - Added descriptive information for each component
-   - Created consistent navigation pattern with "View Demo" buttons
-   - Ensured proper routing between showcase and component demos
-
-4. **Implementation Location**:
-   - Created `src/app-router.tsx` as the central location for all routing configuration
-   - Added route components in `src/routes/` directory
-   - Implemented custom Vite plugins in the project root
-   - Added fallback HTML file in the public directory
+   - Dynamic condition building should use multiple separate queries with the tagged template literal pattern rather than building a single dynamic query string
+   - Arrays in queries should be handled by iterating over the array and executing separate queries for each value
+   - Proper error handling is essential for database operations
+   - Indexes should be created for frequently queried columns
+   - Result sets should be limited to avoid memory issues
+   - Specific columns should be selected instead of using SELECT *
 
 ### Centralized Error Handling Implementation
 
@@ -117,6 +373,7 @@ The Centralized Error Handling system has been implemented as of May 9, 2025, pr
      - `ToolExecutionError` for tool execution failures
      - `MemoryError` for memory system problems
      - `KnowledgeGraphError` for knowledge graph issues
+     - `MCPError` for MCP operation failures
      - `OfflineError` for offline operation failures
 
 2. **Error Handling Utilities**:
@@ -129,6 +386,7 @@ The Centralized Error Handling system has been implemented as of May 9, 2025, pr
      - `withDatabaseErrorHandling` for database operations
      - `withExternalServiceErrorHandling` for external services
      - `withToolExecutionErrorHandling` for tool execution
+     - `withMCPErrorHandling` for MCP operations
      - `withTimeout` for operations with timeouts
 
 3. **Implementation Location**:
@@ -194,267 +452,116 @@ The Tool Usage Tracking system has been successfully implemented with the follow
    - Aggregate statistics across tools and users for comprehensive analytics
    - Temporal analysis for usage patterns by time of day and day of week
 
-## Primary Target Avatar: The Reflective Planner
-
-Based on detailed analysis of potential user personas, we have identified the Reflective Planner as our primary target avatar for ImpossibleAgent. This decision guides our development priorities and UI design choices.
-
-**Key Characteristics:**
-- Age 30-50, often professionals like teachers, therapists, writers, or small business owners
-- Introspective personality with high conscientiousness and moderate introversion
-- Values both structure and emotional connection
-- Comfortable with technology but prefers intuitive, emotionally engaging interfaces
-- Often practices journaling, meditation, or mindfulness
-
-**Why They're Our Primary Target:**
-- Best alignment with our vision of a lifelong AI companion with emotional engagement
-- Significant market size (~20% of working adults)
-- High retention potential due to emotional bond with the product
-- Aligns with our current development roadmap prioritizing emotional features
-- Less likely to switch to competitors focused purely on productivity
-
-**How They'll Use ImpossibleAgent:**
-- Lifeline Interface: For tracking both tasks and personal milestones
-- Memory Garden: As a digital journal for tasks and memories
-- Ritual Moments: For daily goal-setting and reflection
-- Proactive Check-In: For emotional support and stress management
-- Simplified Mode: To focus on emotional rather than technical features
-
-**Development Implications:**
-- Prioritize emotional engagement features (Companion Avatar, Ritual Moments)
-- Design Memory Garden with reflective, journal-like qualities
-- Ensure Simplified Mode is the default for new users
-- Tailor marketing to emphasize emotional connection and persistent memory
-
 ## Next Steps
 
-With the Enhanced Chat Interface now implemented, along with the Testing & Validation Strategy, Confidence Protocol, Centralized Error Handling, Target Avatar Definition, and UI Architecture Plan, the following tasks are priorities based on the project roadmap, current implementation status, and our focus on the Reflective Planner avatar:
+Based on our comprehensive review of the Cloudflare Agents documentation and the current state of our implementation, we've developed a detailed implementation plan with the following priorities:
 
-1. **Enhanced Chat Interface** (Completed May 9, 2025):
-   - ✅ Rich Message Formatting with enhanced markdown, syntax highlighting, and media support
-   - ✅ Message Grouping by time with collapsible sections
-   - ✅ Typing Indicators for improved conversation flow
-   - ✅ Message Reactions and feedback options for learning
-   - ✅ Memory Integration Features (visual indicators, importance marking)
-   - ✅ Advanced Input Options (voice, file upload)
-   - ✅ Companion Avatar Integration directly in the chat interface
-   - ✅ Responsive Design for all device sizes with optimized layouts
-   - ✅ Tree-based message structure for threaded conversations
-   - ✅ Auto-scrolling with scroll-to-bottom button
-   - ⬜ Interactive Elements within messages (buttons, forms, expandable sections) - Planned for next iteration
-   - ⬜ Custom Message Types for different content (memory cards, knowledge graph visualizations) - Planned for next iteration
+1. ✅ **Implement Proper SQL Query Patterns** (Completed May 11, 2025):
+   - ✅ Audit all SQL queries in the codebase for correct pattern usage
+   - ✅ Replace any instances of prepare/bind pattern with SQL tagged template literals
+   - ✅ Ensure proper parameter interpolation within template literals
+   - ✅ Verify dynamic condition building uses the correct approach
+   - ✅ Add appropriate indexes for common query patterns
 
-2. **Memory System Enhancements** (Target: Q3 2025):
-   - Time-Based Summarization: Create periodic summaries (monthly/yearly) to condense important details for long-term memory management
-   - User-Controlled Memory Management: Enhance the UI for memory management to give users more direct control over what is remembered or forgotten
-   - Memory Validation: Implement periodic checks with users to validate memories as part of the ProactiveCheckIn system
+2. ✅ **Optimize Memory and Knowledge Graph Systems** (Completed May 11, 2025):
+   - Implement Vectorize integration for embedding-based memory retrieval
+   - Optimize SQL schema with proper indexing for common query patterns
+   - Implement batch processing for memory operations
+   - Add caching strategies for frequently accessed data
+   - Implement pagination for large result sets
 
-3. **Advanced UI Components** (Target: June 15, 2025):
-   - ✅ Implement Lifeline Interface with narrative timeline for tasks/memories (Completed May 9, 2025)
-   - ✅ Develop Companion Avatar with reactive, mood-based animations (Completed May 9, 2025):
-     - Fixed CSS class names in CompanionAvatar component to match companion-avatar.css
-     - Updated getAvatarClass method to use correct emotion class names
-     - Added CSS styles for speaking indicator and speaking dots animation
-     - Enhanced CSS styles for thoughtful, curious, and concerned emotions
-     - Added CSS styles for minimized state of the avatar
-     - Added CSS variables for companion avatar in index.css for theme support
-     - Created companion-avatar-demo.css for styling the demo page
-     - Ensured proper integration with the routing system
-     - Fixed responsive design for different screen sizes
-     - Improved accessibility with proper ARIA attributes
-   - ✅ Create Memory Garden Lite (2D) for early task/memory visualization (Completed May 9, 2025)
-   - ✅ Build Memory Garden (3D) for immersive task/memory exploration (Completed May 9, 2025)
-   - ✅ Implement Voice Interaction Components for conversational input/output (Completed May 9, 2025):
-     - Created comprehensive voice interaction system with Web Speech API integration
-     - Implemented VoiceInteraction component with speech recognition and synthesis
-     - Created VoiceVisualizer component for real-time audio level visualization
-     - Added VoiceCommands component for displaying suggested voice commands
-     - Implemented accessibility features including high contrast mode
-     - Created comprehensive error handling for speech recognition issues
-     - Added real-time transcription display for user feedback
-     - Implemented VoiceInteractionDemo component for showcasing functionality
-     - Created route component for easy navigation to the Voice Interaction Demo
-   - ✅ Develop Ritual Moments for milestone and daily interactions (Completed May 9, 2025):
-     - Created immersive Ritual Moment component for meaningful interactions
-     - Implemented four ritual types: daily, weekly, milestone, and anniversary
-     - Created step-based interaction flow with progress tracking
-     - Added themed visual environments with ambient particles and animations
-     - Implemented celebration animations for ritual completion
-     - Added accessibility features including high contrast mode and reduced motion
-     - Created comprehensive CSS styling with responsive design
-     - Implemented RitualMomentDemo component with example rituals for each type
-     - Created route component for easy navigation to the Ritual Moments Demo
-   
-   - ✅ Create Component Showcase for all UI components (Completed May 9, 2025):
-     - Implemented ComponentShowcase component with cards for each component demo
-     - Added theme toggle for testing components in both light and dark modes
-     - Created showcase-route.tsx for routing to the showcase page
-     - Set up AppRouter with react-router-dom for navigation between components
-     - Made showcase the default landing page for the application
-     - Added comprehensive CSS styling with responsive design
-     - Implemented card-based layout with descriptive information for each component
-     - Created consistent navigation between component demos
-     - Ensured accessibility with proper ARIA attributes and keyboard navigation
-     - Integrated all existing component demos (Memory Garden, Voice Interaction, Ritual Moments)
-   - ✅ Implement Proactive Check-In System for AI-initiated emotional engagement (Completed May 9, 2025):
-     - Created comprehensive Proactive Check-In System with configurable frequency and triggers
-     - Implemented support for three check-in types: inactivity, sentiment, and deadline
-     - Created animated pulse indicator with different colors for each check-in type
-     - Implemented user activity monitoring with inactivity detection
-     - Added sentiment analysis integration for emotion-based check-ins
-     - Created deadline tracking for task-based check-ins
-     - Implemented ProactiveCheckInDemo component with interactive controls
-     - Added comprehensive CSS styling with responsive design and dark mode support
-     - Created route component for easy navigation to the Proactive Check-In Demo
-     - Integrated with settings synchronization for persistent preferences
-     - Added theme-aware styling with CSS variables
-     - Fixed AgentProvider integration in ProactiveCheckInRoute component
-     - Added fallback implementations for when agent context is not available
-     - Improved error handling for null agent, retrieveMemories, and updateSetting
-     - Fixed invalid hook call issue by replacing direct useTheme hook call with inline theme implementation
-     - Ensured proper data-reason attribute on icon element for correct color styling
-     - Verified demo functionality with all check-in types working correctly
-   - Create Simplified Mode to hide technical components for non-techie users:
-     - Show only Chat Interface, Lifeline Interface, Memory Garden Lite, and Ritual Moments
-     - Implement one-tap toggle to Advanced Mode via Settings menu
-     - Develop guided onboarding flow introducing key features for non-technical users
-     - Hide complex elements (MCP Server Status, Tool Analytics, Server Configuration)
-   - Build Tool Usage Analytics Dashboard with visualization of usage patterns
-   - Implement Tool Suggestion UI with parameter input forms and context-aware suggestions
-   - Develop Rich Media Messaging Components for enhanced content display
-   - Add tool execution status indicators and result visualization
-   - Frontend alignment: Implement Phase 2-3 in FRONTEND_DEVELOPMENT_PLAN.md
+3. **Implement WebSocket Hibernation** (Target: July 30, 2025):
+   - Update onConnect method to use this.ctx.acceptWebSocket(server)
+   - Implement proper webSocketMessage, webSocketClose, and webSocketError handlers
+   - Ensure proper state management during hibernation periods
+   - Add reconnection handling for clients
 
-2. **User Testing Phase** (Target: June 1-10, 2025):
-   - Conduct beta testing with a small group of users for emotional features
-   - Test Lifeline Interface, Memory Garden Lite, Companion Avatar, and Proactive Check-Ins
-   - Collect feedback on emotional engagement and usability
-   - Focus on non-technical users for Simplified Mode testing
-   - Evaluate voice interaction effectiveness and natural language understanding
-   - Refine animations and visual feedback based on user responses
-   - Document findings in progress.md with a testing milestone
-   - Implement improvements before the June 15, 2025 UI Components deadline
+4. **Implement Workflows for Complex Operations** (Target: August 15, 2025):
+   - Identify operations that would benefit from Workflows
+   - Create Workflow classes for these operations
+   - Update wrangler.jsonc to include Workflow bindings
+   - Integrate Workflow triggering into the agent
 
-   **UI Architecture Plan** (Updated May 9, 2025):
-   Based on analysis of VS Code's MCP server implementation and chat interfaces, and focusing on creating an emotionally engaging experience for users seeking a lifelong AI companion, the following UI architecture has been defined:
+5. **Enhance Error Handling and Logging** (Target: August 30, 2025):
+   - Create specialized error classes for different subsystems
+   - Implement consistent error formatting and logging
+   - Add context information to error logs
+   - Implement retry mechanisms for transient failures
+   - Add telemetry for error tracking and analysis
 
-   a. **Core Layout Structure**:
-   ```mermaid
-   graph TD
-     App[App Container] --> LeftSidebar[Left Sidebar]
-     App --> MainContent[Main Content Area]
-     App --> RightPanel[Optional Right Panel]
-     
-     LeftSidebar --> LifelineInterface[Lifeline Interface]
-     LeftSidebar --> MCPServerStatus[MCP Server Status]
-     
-     MainContent --> ChatInterface[Chat Interface]
-     MainContent --> ToolInterface[Tool Interface]
-     MainContent --> MCPServerConfig[MCP Server Config]
-     MainContent --> CompanionAvatar[Companion Avatar]
-     
-     RightPanel --> MemoryGarden[Memory Garden]
-     RightPanel --> ToolAnalytics[Tool Analytics]
-   ```
+6. **Implement MCP Server Transport** (Target: September 15, 2025):
+   - Update server.ts to handle both SSE and Streamable HTTP transport methods
+   - Implement proper routing for MCP endpoints
+   - Add support for authentication and authorization
+   - Configure CORS and other security settings
 
-   b. **Key Components**:
-   - **Left Sidebar**:
-     - Lifeline Interface: A dynamic, scrollable timeline visualizing tasks, memories, and milestones as interactive nodes
-     - Topic clusters, knowledge navigation, and memory filtering from conversation history
-     - AI-generated "future nodes" for task suggestions
-     - MCP server status indicators
+7. **Optimize State Management** (Target: September 30, 2025):
+   - Review and refine the state structure
+   - Implement more granular state updates
+   - Use the SQL database for large or complex state data
+   - Optimize state synchronization between server and clients
 
-   - **Main Content Area**:
-     - Chat interface with message history and rich content rendering
-     - Tool execution interface with parameter forms and result visualization
-     - MCP server configuration when in that section
-     - Companion Avatar: A customizable, reactive presence that reflects context and user mood
-     - Split view capability for simultaneous chat and preview
+8. **Update Tool Integration** (Target: October 15, 2025):
+   - Update tool definitions to use the Cloudflare Agents SDK's tool system
+   - Implement proper tool execution patterns with human-in-the-loop confirmation
+   - Enhance tool discovery and registration
+   - Improve tool suggestion based on context
 
-   - **Optional Right Panel**:
-     - Memory Garden: A 3D, navigable space with "plants" for task categories and "buds" for tasks/memories
-     - Tool Analytics dashboard with usage statistics and trends
+9. **Add Comprehensive Testing** (Target: October 30, 2025):
+    - Add unit tests for core components
+    - Implement integration tests for component interactions
+    - Add end-to-end tests for critical user journeys
+    - Set up CI/CD pipeline for automated testing
 
-   - **Ritual Moments (Special Modes)**:
-     - Anniversary Mode: Starry-sky theme for relationship milestones
-     - Daily Check-In Bloom: Morning ritual for setting goals in a blooming-flower interface
-     - Reflective Campfire: Warm mode for revisiting goals/memories
+10. **Memory System Enhancements** (Target: Q4 2025):
+    - Time-Based Summarization: Create periodic summaries (monthly/yearly) to condense important details
+    - User-Controlled Memory Management: Enhance the backend API for memory management
+    - Memory Validation: Implement periodic checks with users to validate memories
 
-   c. **Visual Design Specifications**:
-   - **Color Scheme**: Dark background (#1e1e1e) with warm accents for Garden/Rituals (e.g., golds, blues)
-   - **Accent Colors**: Blue (#0078d7) for primary actions; dynamic avatar colors for mood
-   - **Typography**: Inter for tasks; handwritten-style (e.g., Caveat) for Ritual Moments
-   - **Spacing**: Base unit of 8px; organic spacing for Garden elements
-   - **Interactive Elements**: Clear hover/focus states with subtle animations; organic animations for Garden elements
+11. **Security Enhancements** (Target: Q4 2025):
+    - Advanced access control mechanisms for sensitive operations
+    - Comprehensive audit logging for security-relevant events
+    - Enhanced privacy settings management with user controls
+    - Data encryption for sensitive information
+    - User authentication improvements with secure flows
 
-   d. **Unique Improvements**:
-   - **Lifeline Persistence**: Visual representation of the user-AI relationship journey
-   - **Emotional Avatar**: Reacts to user mood and context, creating a "friend" vibe
-   - **Gamified Garden**: Transforms task management into an immersive, enjoyable experience
-   - **Ritual Bonding**: Celebrates relationship milestones with special interface modes
-   - **Contextual Recommendations**: Enhanced with Lifeline/Garden integration for improved relevance
+12. **MCP Tool Expansion** (Target: Q4 2025):
+    - Calendar and Email tools for seamless daily integration
+    - Productivity tools (document editing, task management)
+    - Social media platform tools (Twitter, LinkedIn, Facebook)
+    - Smart home device tools (IoT integration)
+    - Enhanced scheduling and communication tools
 
-2. **Security Enhancements** (Target: July 10, 2025):
-   - Enhance the existing SecurityManager with production-ready encryption
-   - Implement proper password hashing with bcrypt or Argon2
-   - Create comprehensive audit logging visualization
-   - Enhance privacy settings UI with user-friendly controls
-   - Add data encryption for sensitive information using industry standards
-   - Implement secure authentication flows with multi-factor authentication
-   - Build user memory management controls for data deletion and export
-   - Frontend alignment: Integrate security features in client applications
-
-3. **Expand MCP Adapters** (Target: August 5, 2025):
-   - Prioritize Calendar and Email Adapters for seamless daily integration (Accelerated: July 15, 2025)
-   - Implement adapters for productivity tools (document editing, task management)
-   - Develop adapters for social media platforms (Twitter, LinkedIn, Facebook)
-   - Build adapters for smart home devices (IoT integration)
-   - Add Wearable Notifications for real-time reminders:
-     - Limit notifications to high-priority events (overdue tasks, Daily Check-In prompts)
-     - Integrate with Calendar Adapters for meeting reminders
-     - Allow customization via Privacy Settings in Security Enhancements
-     - Implement non-intrusive notification design with quick action buttons
-     - Support different wearable platforms (smartwatches, fitness trackers)
-   - Enhance scheduling and communication adapters with advanced capabilities
-   - Frontend alignment: Develop Tool Integration UI components
-
-4. **Advanced Learning Mechanisms** (Target: September 2025):
-   - Implement Sentiment Analysis Module for enhanced mood detection
-   - Enhance the LearningSystem with more sophisticated algorithms
-   - Implement reinforcement learning for tool selection
-   - Develop more advanced pattern recognition for improved suggestions
-   - Create feedback loops for continuous improvement of agent behavior
-   - Add personalized learning models based on user interactions
-   - Implement adaptive suggestion algorithms that improve over time
-   - Frontend alignment: Build Advanced Interaction & Personalization features
-
-5. **Tool Chaining** (Target: Q3 2025):
-   - Implement tool chaining for complex workflows
-   - Create templates for common tool chains
-   - Develop automatic tool chain suggestion based on user intent
-   - Build tool chain execution engine for sequential and parallel execution
-   - Add tool chain visualization for user understanding
-   - Implement error handling and recovery for tool chains
-   - Frontend alignment: Create specialized UI for tool chain visualization
-
-6. **Marketing Teaser Campaign** (Target: June 2025):
-   - Create videos showcasing Memory Garden Lite and Ritual Moments
-   - Highlight the emotional bond between user and AI companion
-   - Leverage direct-response marketing to position ImpossibleAgent as unique
-   - Develop shareable demos of the Lifeline Interface and Companion Avatar
-   - Create promotional materials emphasizing the "lifelong AI companion" concept
-   - Prepare launch materials for the June 15, 2025 UI Components release
-   - Frontend alignment: Ensure all showcased features are polished for demos
-
-7. **Contextual Awareness & Improvement Processes** (Can be added as needed):
-   - Self-Improving Cline Reflection process for multi-step tasks
-   - Formal Assumption Documentation system
-   - Templates and guidelines for both processes
-   - Integration with existing development workflow
-   - Process documentation in memory bank
-   - Team training on new processes
-   - Frontend alignment: None required (internal development processes)
+13. **Tool Chaining** (Target: Q1 2026):
+    - Tool chain definition framework
+    - Templates for common tool chains
+    - Automatic tool chain suggestion
+    - Tool chain execution engine
+    - Tool chain visualization
 
 ## Active Decisions and Considerations
+
+### Frontend Cleanup Decisions
+
+1. **Complete vs. Partial Removal**:
+   - Decision: Complete removal of frontend components except for minimal Chat interface
+   - Rationale: Simplifies codebase, reduces dependencies, and focuses development on backend functionality
+   - Trade-offs: Loses UI components but gains maintainability and focus
+
+2. **SDK Update Strategy**:
+   - Decision: Implement comprehensive cleanup scripts for future SDK updates
+   - Rationale: The base Cloudflare Agents SDK includes many frontend files and dependencies by default
+   - Implementation: Created scripts to remove frontend components, clean up dependencies, and reinstall node_modules
+
+3. **Build Process**:
+   - Decision: Use wrangler for building and deployment
+   - Rationale: Simplifies the build process and aligns with Cloudflare Workers deployment
+   - Implementation: Added build script to package.json using wrangler deploy --dry-run
+
+4. **Documentation**:
+   - Decision: Create comprehensive documentation for the cleanup process
+   - Rationale: Ensures future developers understand the project structure and update process
+   - Implementation: Created FRONTEND-CLEANUP-README.md and memory-bank/frontend-cleanup.md
 
 ### Tool Usage Tracking Design Decisions
 
@@ -477,43 +584,6 @@ With the Enhanced Chat Interface now implemented, along with the Testing & Valid
    - Decision: Store sanitized input parameters to protect sensitive information
    - Rationale: Tool usage tracking should not compromise user privacy
    - Implementation: Sanitize sensitive data before storing in the database
-
-### UI Component Priorities
-
-1. **Tool Usage Analytics Dashboard**:
-   - Priority: High
-   - Rationale: Provides immediate value from the newly implemented tracking system
-   - Key features: Usage statistics, trending tools, success/failure rates
-   - Design inspiration: VS Code's clean, dark-themed interface with clear data visualization
-   - Implementation approach: Use chart.js or D3.js for visualizations within Card components
-
-2. **Tool Suggestion UI**:
-   - Priority: High
-   - Rationale: Leverages the enhanced suggestion capabilities from the tracking system
-   - Key features: Context-aware suggestions, parameter input forms
-   - Design inspiration: VS Code's MCP server cards with clear visual hierarchy
-   - Implementation approach: Create reusable ToolCard components with consistent styling
-
-3. **Voice Interaction Components**:
-   - Priority: Medium
-   - Rationale: Expands interaction modalities but depends on tool integration UI
-   - Key features: Voice input, audio feedback
-   - Design inspiration: Minimal UI indicators for voice activity and processing
-   - Implementation approach: Use Web Speech API with visual feedback indicators
-
-4. **Rich Media Messaging**:
-   - Priority: Medium
-   - Rationale: Enhances content display but depends on core UI components
-   - Key features: Media display, interactive elements
-   - Design inspiration: VS Code's markdown rendering with syntax highlighting
-   - Implementation approach: Extend existing memoized-markdown component with media support
-
-5. **Context Explorer**:
-   - Priority: High (New)
-   - Rationale: Replaces traditional chat history with context-aware navigation
-   - Key features: Topic clusters, knowledge graph navigation, memory exploration
-   - Design inspiration: VS Code's sidebar navigation with expandable sections
-   - Implementation approach: Create hierarchical navigation component with memory integration
 
 ## Important Patterns and Preferences
 
@@ -612,3 +682,9 @@ With the Enhanced Chat Interface now implemented, along with the Testing & Valid
    - Design interfaces to minimize coupling
    - Consider dependency injection for better testability
    - Document component relationships for clarity
+
+4. **SDK Management**:
+   - The base Cloudflare Agents SDK includes many frontend components by default
+   - Updates to the SDK may reintroduce frontend components
+   - Cleanup scripts are essential for maintaining a backend-focused project
+   - Document the update process for future developers

@@ -3,6 +3,7 @@ import { AIChatAgent } from "agents/ai-chat-agent";
 import { streamText, createDataStreamResponse, type StreamTextOnFinishCallback, type ToolSet } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { MemoryManager, type Memory } from "../memory/MemoryManager";
+import { directMemoryQuery, isAskingAboutMemories, extractKeyTerms } from "./MemoryFix";
 import { EmbeddingManager } from "../memory/EmbeddingManager";
 import { TemporalContextManager } from "../memory/TemporalContextManager";
 import { RelevanceRanking } from "../memory/RelevanceRanking";
@@ -13,10 +14,7 @@ import { KnowledgeExtractor } from "../knowledge/KnowledgeExtractor";
 import { KnowledgeGraph } from "../knowledge/KnowledgeGraph";
 import { LearningSystem } from "../knowledge/LearningSystem";
 import type { Entity, Relationship, GraphQueryResult } from "../knowledge/graph/types";
-import { BaseMCPAdapter } from "../tools/BaseMCPAdapter";
-import { ToolDiscoveryManager } from "../tools/ToolDiscoveryManager";
-import { ToolSuggestionSystem } from "../tools/ToolSuggestionSystem";
-import { ToolUsageTracker } from "../tools/ToolUsageTracker";
+// Tool-related imports removed as part of MCP refactoring
 
 // Define interfaces for the agent's state
 interface UserProfile {
@@ -386,9 +384,42 @@ If asked about your memory capabilities, explain that you have a persistent memo
   /**
    * Retrieve relevant memories based on the current conversation
    * This method uses the enhanced memory retrieval system with embeddings, temporal context, and relevance ranking
+   * It also supports direct memory queries when the chat history is cleared or when the user is asking about memories
    */
-  private async getRelevantMemories(limit: number = 5) {
-    if (this.messages.length === 0) return [];
+  private async getRelevantMemories(limit: number = 5, forceQuery?: string) {
+    // If a specific query is provided, use it directly
+    if (forceQuery) {
+      console.log(`Using forced query for memory retrieval: "${forceQuery}"`);
+      return directMemoryQuery(this, forceQuery, limit);
+    }
+    
+    // Helper function to convert SQL results to Memory objects
+    const convertToMemories = (results: any[]): Memory[] => {
+      return results.map(row => ({
+        id: String(row.id || crypto.randomUUID()),
+        content: String(row.content || ''),
+        timestamp: Number(row.timestamp || Date.now()),
+        source: row.source ? String(row.source) : undefined,
+        context: row.context ? String(row.context) : undefined,
+        metadata: row.metadata ? (typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata) : undefined
+      }));
+    };
+    
+    // If there are no messages, try to get recent memories as a fallback
+    if (this.messages.length === 0) {
+      console.log("No messages in context, retrieving recent memories as fallback");
+      try {
+        const recentMemoriesResult = await this.sql`
+          SELECT * FROM episodic_memories 
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `;
+        return convertToMemories(recentMemoriesResult);
+      } catch (error) {
+        console.error("Error retrieving recent memories:", error);
+        return [];
+      }
+    }
     
     // Get the last user message
     const lastUserMessage = [...this.messages].reverse().find(m => m.role === 'user');
@@ -397,6 +428,16 @@ If asked about your memory capabilities, explain that you have a persistent memo
     const content = typeof lastUserMessage.content === 'string' 
       ? lastUserMessage.content 
       : JSON.stringify(lastUserMessage.content);
+    
+    // Check if the user is asking about memories
+    if (isAskingAboutMemories(content)) {
+      // Extract key terms for better memory retrieval
+      const keyTerms = extractKeyTerms(content);
+      console.log(`Memory query detected. Key terms: "${keyTerms}"`);
+      
+      // Use direct memory query for memory-related questions
+      return directMemoryQuery(this, keyTerms, limit);
+    }
     
     try {
       // Initialize enhanced memory components
@@ -487,27 +528,23 @@ If asked about your memory capabilities, explain that you have a persistent memo
       
       // Last resort fallback: return recent memories
       console.log("All retrieval methods failed, returning most recent memories");
-      const query = `
+      const recentMemoriesResult = await this.sql`
         SELECT * FROM episodic_memories 
         ORDER BY timestamp DESC
         LIMIT ${limit}
       `;
-      
-      const recentMemories = await this.sql`${query}`;
-      console.log(`Retrieved ${recentMemories.length} recent memories as fallback`);
-      return recentMemories;
+      console.log(`Retrieved ${recentMemoriesResult.length} recent memories as fallback`);
+      return convertToMemories(recentMemoriesResult);
     } catch (error) {
       console.error("Error retrieving memories:", error);
       
       // Fallback to just returning recent memories in case of error
-      const query = `
+      const recentMemoriesResult = await this.sql`
         SELECT * FROM episodic_memories 
         ORDER BY timestamp DESC
         LIMIT ${limit}
       `;
-      
-      const recentMemories = await this.sql`${query}`;
-      return recentMemories;
+      return convertToMemories(recentMemoriesResult);
     }
   }
 
@@ -707,100 +744,24 @@ If asked about your memory capabilities, explain that you have a persistent memo
     timeframe?: number; // Days
     limit?: number;
   }) {
-    const toolUsageTracker = new ToolUsageTracker(this);
-    
-    // Initialize the tool usage tracker
-    try {
-      await toolUsageTracker.initialize();
-    } catch (error) {
-      console.error("Failed to initialize tool usage tracker:", error);
-      throw error;
-    }
-    
-    // If a specific tool ID is provided, get stats for that tool
-    if (options?.toolId) {
-      return toolUsageTracker.getToolUsageStats(options.toolId);
-    }
-    
-    // If a user ID is provided, get user-specific stats
-    if (options?.userId) {
-      return toolUsageTracker.getUserToolUsageStats(options.userId);
-    }
-    
-    // Get trending tools for the specified timeframe
-    const timeframe = options?.timeframe || 7; // Default to 7 days
-    const limit = options?.limit || 10; // Default to top 10
-    
-    // Get trending tools
-    const trending = await toolUsageTracker.getTrendingTools(timeframe, limit);
-    
-    // Get aggregate statistics
-    const result = await this.sql`
-      SELECT 
-        COUNT(*) as total_events,
-        SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful_events,
-        SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) as failed_events,
-        AVG(execution_time) as avg_execution_time,
-        COUNT(DISTINCT tool_id) as unique_tools,
-        COUNT(DISTINCT user_id) as unique_users,
-        MIN(timestamp) as first_event,
-        MAX(timestamp) as last_event
-      FROM tool_usage_events
-      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
-    `;
-    
-    // Get usage by hour
-    const hourlyUsage = await this.sql`
-      SELECT 
-        CAST(strftime('%H', datetime(timestamp/1000, 'unixepoch')) AS INTEGER) as hour,
-        COUNT(*) as count
-      FROM tool_usage_events
-      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
-      GROUP BY hour
-      ORDER BY hour
-    `;
-    
-    // Get usage by day of week
-    const dailyUsage = await this.sql`
-      SELECT 
-        CAST(strftime('%w', datetime(timestamp/1000, 'unixepoch')) AS INTEGER) as day_of_week,
-        COUNT(*) as count
-      FROM tool_usage_events
-      WHERE timestamp > ${Date.now() - timeframe * 24 * 60 * 60 * 1000}
-      GROUP BY day_of_week
-      ORDER BY day_of_week
-    `;
-    
-    // Format the hourly and daily usage data
-    const usageByHour = Object.fromEntries(
-      hourlyUsage.map((row: any) => [row.hour, row.count])
-    );
-    
-    const usageByDayOfWeek = Object.fromEntries(
-      dailyUsage.map((row: any) => [row.day_of_week, row.count])
-    );
-    
-    // Get the aggregate stats and ensure numeric values
-    const stats = result[0];
-    const totalEvents = Number(stats?.total_events || 0);
-    const successfulEvents = Number(stats?.successful_events || 0);
-    const failedEvents = Number(stats?.failed_events || 0);
+    // This method has been removed as part of MCP refactoring
+    // Tool usage tracking will be implemented in the McpPersonalAgent class
+    console.log("Tool usage statistics are not available in this version");
     
     return {
-      trending,
       summary: {
-        totalEvents,
-        successfulEvents,
-        failedEvents,
-        successRate: totalEvents > 0 ? successfulEvents / totalEvents : 0,
-        avgExecutionTime: Number(stats?.avg_execution_time || 0),
-        uniqueTools: Number(stats?.unique_tools || 0),
-        uniqueUsers: Number(stats?.unique_users || 0),
-        firstEvent: stats?.first_event || null,
-        lastEvent: stats?.last_event || null
+        totalEvents: 0,
+        successfulEvents: 0,
+        failedEvents: 0,
+        successRate: 0,
+        avgExecutionTime: 0,
+        uniqueTools: 0,
+        uniqueUsers: 0,
+        firstEvent: null,
+        lastEvent: null
       },
-      usageByHour,
-      usageByDayOfWeek
+      usageByHour: {},
+      usageByDayOfWeek: {}
     };
   }
 
@@ -899,22 +860,9 @@ If asked about your memory capabilities, explain that you have a persistent memo
         const knowledgeBase = new KnowledgeBase(this);
         const knowledgeGraph = new KnowledgeGraph(this, knowledgeBase);
         
-        // Initialize tool discovery, suggestion, and tracking systems
-        const toolDiscoveryManager = new ToolDiscoveryManager(this);
-        const toolSuggestionSystem = new ToolSuggestionSystem(this);
-        const toolUsageTracker = new ToolUsageTracker(this);
-        
         try {
           // Initialize the knowledge graph
           await knowledgeGraph.initialize();
-          
-          // Initialize tool systems
-          await toolDiscoveryManager.initialize();
-          await toolSuggestionSystem.initialize();
-          await toolUsageTracker.initialize();
-          
-          // Discover available tools if needed
-          await toolDiscoveryManager.discoverTools({ refresh: false });
         } catch (error) {
           console.error("Failed to initialize enhanced systems:", error);
         }
@@ -928,48 +876,77 @@ If asked about your memory capabilities, explain that you have a persistent memo
             const content = typeof lastUserMessage.content === 'string' 
               ? lastUserMessage.content 
               : JSON.stringify(lastUserMessage.content);
+            
+            // Check if the user is asking about memories
+            const isMemoryQuery = isAskingAboutMemories(content);
+            
+            if (isMemoryQuery) {
+              // Extract key terms for better memory retrieval
+              const keyTerms = extractKeyTerms(content);
+              console.log(`Memory query detected. Key terms: "${keyTerms}"`);
               
-            // Initialize enhanced memory components
-            const embeddingManager = new EmbeddingManager();
-            const temporalContextManager = new TemporalContextManager();
-            const relevanceRanking = new RelevanceRanking({ embeddingManager });
-            const learningSystem = new LearningSystem(this);
-            
-            // Initialize components
-            await embeddingManager.initialize();
-            
-            // Get current temporal context
-            const temporalContext = await temporalContextManager.getCurrentContext();
-            
-            // Record this interaction in the temporal context
-            await temporalContextManager.recordInteraction('query');
-            
-            // Create the learning-enhanced memory retrieval system
-            const enhancedMemoryRetrieval = new LearningEnhancedMemoryRetrieval(
-              this,
-              memoryManager,
-              learningSystem,
-              relevanceRanking,
-              temporalContextManager
-            );
-            
-            // Initialize the enhanced memory retrieval
-            await enhancedMemoryRetrieval.initialize();
-            
-            // Use the enhanced memory retrieval system
-            const retrievalResult = await enhancedMemoryRetrieval.retrieveMemories(content, {
-              contextTimeframe: "all",
-              enhanceQuery: true,
-              limit: 5
-            });
-            
-            // If we found memories using the enhanced system, use them
-            if (retrievalResult.memories.length > 0) {
-              relevantMemories = retrievalResult.memories;
+              // Use direct memory query for memory-related questions
+              relevantMemories = await directMemoryQuery(this, keyTerms, 5);
             } else {
-              // Fallback to the basic memory manager if the enhanced system didn't find anything
-              relevantMemories = await memoryManager.retrieveMemories(content, { limit: 5 });
+              // Initialize enhanced memory components
+              const embeddingManager = new EmbeddingManager();
+              const temporalContextManager = new TemporalContextManager();
+              const relevanceRanking = new RelevanceRanking({ embeddingManager });
+              const learningSystem = new LearningSystem(this);
+              
+              // Initialize components
+              await embeddingManager.initialize();
+              
+              // Get current temporal context
+              const temporalContext = await temporalContextManager.getCurrentContext();
+              
+              // Record this interaction in the temporal context
+              await temporalContextManager.recordInteraction('query');
+              
+              // Create the learning-enhanced memory retrieval system
+              const enhancedMemoryRetrieval = new LearningEnhancedMemoryRetrieval(
+                this,
+                memoryManager,
+                learningSystem,
+                relevanceRanking,
+                temporalContextManager
+              );
+              
+              // Initialize the enhanced memory retrieval
+              await enhancedMemoryRetrieval.initialize();
+              
+              // Use the enhanced memory retrieval system
+              const retrievalResult = await enhancedMemoryRetrieval.retrieveMemories(content, {
+                contextTimeframe: "all",
+                enhanceQuery: true,
+                limit: 5
+              });
+              
+              // If we found memories using the enhanced system, use them
+              if (retrievalResult.memories.length > 0) {
+                relevantMemories = retrievalResult.memories;
+              } else {
+                // Fallback to the basic memory manager if the enhanced system didn't find anything
+                relevantMemories = await memoryManager.retrieveMemories(content, { limit: 5 });
+              }
             }
+          } else if (this.messages.length === 0) {
+            // If there are no messages (chat was cleared), get recent memories
+            console.log("Chat history is empty, retrieving recent memories");
+            const recentMemoriesResult = await this.sql`
+              SELECT * FROM episodic_memories 
+              ORDER BY timestamp DESC
+              LIMIT 5
+            `;
+            // Convert SQL results to Memory objects
+            relevantMemories = recentMemoriesResult.map(row => ({
+              id: String(row.id || crypto.randomUUID()),
+              content: String(row.content || ''),
+              timestamp: Number(row.timestamp || Date.now()),
+              source: row.source ? String(row.source) : undefined,
+              context: row.context ? String(row.context) : undefined,
+              metadata: row.metadata ? (typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata) : undefined
+            }));
           }
         } catch (error) {
           console.error("Error retrieving memories:", error);
@@ -1013,6 +990,10 @@ IMPORTANT: You have access to a sophisticated memory system that stores conversa
 When users ask about your memory capabilities or if you can remember past conversations, you should confirm that
 you CAN access the chat history and memories stored in the SQL database. You should never say you don't have
 access to the database or past conversations.
+
+CRITICAL: Even when the chat history is cleared, you still have access to all previous memories stored in the database.
+You should NEVER say "I don't have a memory of that" or "I don't have access to that information" when asked about
+previous conversations. Instead, you should check your memory database and provide the information if available.
 
 ${relevantMemories.length > 0 ? `Here are some relevant memories retrieved from the SQL database:
 ${relevantMemories.map(m => `- ${m.content}`).join('\n')}` : 'No relevant memories found in the database for this conversation yet.'}

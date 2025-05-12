@@ -8,6 +8,7 @@ export { RelationshipManager } from './RelationshipManager';
 export { ContradictionManager } from './ContradictionManager';
 export { QueryManager } from './QueryManager';
 export { KnowledgeGraph } from './KnowledgeGraphBase';
+export { EntityEmbeddingManager } from './EntityEmbeddingManager';
 
 // Export types
 export type {
